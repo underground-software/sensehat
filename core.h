@@ -16,8 +16,33 @@
 #ifndef __LINUX_MFD_RPISENSE_CORE_H_
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
+<<<<<<< HEAD
 #include "joystick.h"
 #include "framebuffer.h"
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/framebuffer.h>
+=======
+=======
+>>>>>>> ea10db8 (framebuffer testfile)
+/*
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/framebuffer.h>
+*/
+
+#include "joystick.h"
+#include "framebuffer.h"
+<<<<<<< HEAD
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+=======
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/framebuffer.h>
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
+>>>>>>> ed899c1 (framebuffer testfile)
 
 /*
  * Register values.
@@ -36,12 +61,40 @@ struct rpisense {
 
 	/* Client devices */
 	struct rpisense_js joystick;
+<<<<<<< HEAD
 	struct rpisense_cd char_dev;
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+	struct rpisense_fb framebuffer;
+=======
+	struct rpisense_cd char_dev;
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+	struct rpisense_cd char_dev;
+=======
+	struct rpisense_fb framebuffer;
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
+>>>>>>> ed899c1 (framebuffer testfile)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
 int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
+<<<<<<< HEAD
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
+=======
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
+>>>>>>> ed899c1 (framebuffer testfile)
 
 #endif

@@ -25,6 +25,7 @@
 struct rpisense;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 struct rpisense_fb {
 	struct platform_device *pdev;
 	struct fb_info *info;
@@ -33,6 +34,16 @@ struct rpisense_cd {
 	struct platform_device *pdev;
 	struct miscdevice *c_dev;
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+struct rpisense_cd {
+	struct platform_device *pdev;
+	struct miscdevice *c_dev;
+=======
+struct rpisense_fb {
+	struct platform_device *pdev;
+	struct fb_info *info;
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
 };
 
 #endif

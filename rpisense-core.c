@@ -21,21 +21,34 @@
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "core.h"
 #include <linux/slab.h>
 
 =======
+=======
+>>>>>>> ed899c1 (framebuffer testfile)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
 
 =======
+=======
+>>>>>>> ea10db8 (framebuffer testfile)
 //#include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
 
 #include "core.h"
 
+<<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+=======
+#include <linux/mfd/rpisense/core.h>
+#include <linux/slab.h>
+
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
 static struct rpisense *rpisense;
 
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
@@ -101,10 +114,17 @@ static int rpisense_probe(struct i2c_client *i2c,
 				     &(rpisense->joystick.pdev));
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
 <<<<<<< HEAD
+<<<<<<< HEAD
 				     &(rpisense->framebuffer.pdev));
 =======
 				     &(rpisense->char_dev.pdev));
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+				     &(rpisense->char_dev.pdev));
+=======
+				     &(rpisense->framebuffer.pdev));
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
 
 	return 0;
 }
@@ -142,7 +162,10 @@ int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 EXPORT_SYMBOL_GPL(rpisense_block_write);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> ea10db8 (framebuffer testfile)
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count)
 {
 	int ret = i2c_master_recv(rpisense->i2c_client, buf, count);
@@ -154,7 +177,12 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count)
 }
 EXPORT_SYMBOL_GPL(rpisense_block_read);
 
+<<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+=======
+=======
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },
 	{ }

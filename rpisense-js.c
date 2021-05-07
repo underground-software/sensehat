@@ -16,13 +16,18 @@
 #include <linux/module.h>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
 =======
+=======
+>>>>>>> ed899c1 (framebuffer testfile)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
 =======
+=======
+>>>>>>> ea10db8 (framebuffer testfile)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
@@ -31,8 +36,18 @@
 #include "joystick.h"
 #include "core.h"
 
+<<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+<<<<<<< HEAD
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
+=======
+=======
+=======
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/core.h>
+>>>>>>> b54532f (framebuffer testfile)
+>>>>>>> ea10db8 (framebuffer testfile)
+>>>>>>> ed899c1 (framebuffer testfile)
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
