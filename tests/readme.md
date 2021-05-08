@@ -4,7 +4,7 @@ compile by running:
 
 `$ make`
 
-## `framebuffer_test`:
+### `framebuffer_test`:
  - This program will display a single light on the screen that can be moved with the arrow keys (or the joystick)
  - Each time a pixel is illuminated it gets a random color 
  - Press enter (or click the joystick) to exit the program
