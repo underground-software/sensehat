@@ -15,8 +15,8 @@
 
 #include <linux/module.h>
 
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/core.h>
+#include "joystick.h"
+#include "core.h"
 
 static struct rpisense *rpisense;
 static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};

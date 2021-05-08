@@ -24,8 +24,8 @@
 #include <linux/fb.h>
 #include <linux/init.h>
 
-#include <linux/mfd/rpisense/framebuffer.h>
-#include <linux/mfd/rpisense/core.h>
+#include "framebuffer.h"
+#include "core.h"
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
