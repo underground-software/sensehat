@@ -1,5 +1,7 @@
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
+.PHONY: build clean load
+
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
 
