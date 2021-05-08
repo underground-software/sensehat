@@ -26,7 +26,7 @@ Set compiled kernel as default kernel:
 # grubby --set-default /boot/<vmlinuz-new-version>
 
 Reboot system: 
-# reboot
+# sudo reboot
 On reboot, press esc to display menu and go to:
 Device manager -> Raspberry Pi Configuration -> Advanced Configuration
 Set < System Table Selection > to <ACPI + Devicetree> 
