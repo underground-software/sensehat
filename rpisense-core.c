@@ -20,7 +20,7 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-#include <linux/mfd/rpisense/core.h>
+#include "core.h"
 #include <linux/slab.h>
 
 static struct rpisense *rpisense;
