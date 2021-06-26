@@ -18,23 +18,31 @@
 #include "joystick.h"
 #include "core.h"
 
+//why does each module declare its own singleton pointer
 static struct rpisense *rpisense;
+//the magic number 5 is bad and the order of these seems important (i.e. dictated by hardware but this could be made more explicit)
 static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
 static void keys_work_fn(struct work_struct *work)
 {
 	int i;
+	//probably should explicitly initialize this to zero just to make it more clear
 	static s32 prev_keys;
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 	s32 keys = rpisense_reg_read(rpisense, RPISENSE_KEYS);
 	s32 changes = keys ^ prev_keys;
 
 	prev_keys = keys;
+	//magic number 5 again. Should be ARRAY_SIZ(keymap)
 	for (i = 0; i < 5; i++) {
+		//mutating three variables (i, keys and changes) per loop iteration is kind of gross
+		//use changes>>i?
 		if (changes & 1) {
 			input_report_key(rpisense_js->keys_dev,
+					//use keys>>i?
 					 keymap[i], keys & 1);
 		}
+		//remove these lines?
 		changes >>= 1;
 		keys >>= 1;
 	}
