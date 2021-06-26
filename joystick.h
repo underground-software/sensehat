@@ -30,6 +30,6 @@ struct rpisense_js {
 	struct work_struct keys_work_s;
 	int keys_irq;
 };
-
+//could include enum for which bits correspond to which key to make this file the groud source of truth
 
 #endif

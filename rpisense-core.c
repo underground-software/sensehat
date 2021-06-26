@@ -23,6 +23,7 @@
 #include "core.h"
 #include <linux/slab.h>
 
+//holds the singleton instance of the sensehat struct
 static struct rpisense *rpisense;
 
 static void rpisense_client_dev_register(struct rpisense *rpisense,
@@ -34,6 +35,8 @@ static void rpisense_client_dev_register(struct rpisense *rpisense,
 	*pdev = platform_device_alloc(name, -1);
 	if (*pdev == NULL) {
 		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
+		//Maybe this function should return the pointer instead of modifying it by reference?
+		//Would make it more clear that it should be checked for null than an outparam
 		return;
 	}
 
@@ -44,6 +47,7 @@ static void rpisense_client_dev_register(struct rpisense *rpisense,
 		dev_err(rpisense->dev, "Failed to register %s: %d\n",
 			name, ret);
 		platform_device_put(*pdev);
+		//does this leak?
 		*pdev = NULL;
 	}
 }
@@ -58,17 +62,23 @@ static int rpisense_probe(struct i2c_client *i2c,
 	if (rpisense == NULL)
 		return -ENOMEM;
 
+	//set up connection between the i2c client and the sensehat struct
 	i2c_set_clientdata(i2c, rpisense);
+	//set up connection between sensehat struct and linux device struct
 	rpisense->dev = &i2c->dev;
+	//set up connection between sensehat struct and i2c client
 	rpisense->i2c_client = i2c;
 
+	//verify the value of the "Who Am I" register from the sensehat as a sanity check
 	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
 	if (ret > 0) {
+		//this should almost certainly be RPISENSE_ID instead of a literal 's'
 		if (ret != 's')
 			return -EINVAL;
 	} else {
 		return ret;
 	}
+	//check the firmware version of the sensehat
 	ret = rpisense_reg_read(rpisense, RPISENSE_VER);
 	if (ret < 0)
 		return ret;
@@ -76,6 +86,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	dev_info(rpisense->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
+	//get the interrupt descriptor for the joystick (is there a reason this is in here and not in the joystick probe?)
 	rpisense_js = &rpisense->joystick;
 	rpisense_js->keys_desc = devm_gpiod_get(&i2c->dev,
 						"keys-int", GPIOD_IN);
@@ -87,6 +98,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 			return PTR_ERR(rpisense_js->keys_desc);
 		}
 	}
+	//These calls can fail. If they do is that a fatal error that should be checked and handled?
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
@@ -103,6 +115,8 @@ static int rpisense_remove(struct i2c_client *i2c)
 	return 0;
 }
 
+//simply returns the singleton pointer. This probably offers some extra control as opposed to just giving
+//the singleton instance pointer external linkage as only code here can modify what it points to
 struct rpisense *rpisense_get_dev(void)
 {
 	return rpisense;
@@ -124,6 +138,8 @@ EXPORT_SYMBOL_GPL(rpisense_reg_read);
 
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 {
+	//this is should almost certainly be using i2c_smbus_write_block_data since the other functions use SMBus protocol instead of just raw i2c
+	//the function would need an `int reg` parameter like the others but this would actually be good as it would clean up the frame buffer code
 	int ret = i2c_master_send(rpisense->i2c_client, buf, count);
 
 	if (ret < 0)
