@@ -31,6 +31,7 @@ static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
+//why does each module declare their own singleton pointer?
 static struct rpisense *rpisense;
 
 struct rpisense_fb_param {
@@ -40,16 +41,19 @@ struct rpisense_fb_param {
 	u8 *gamma;
 };
 
+//gamma table to scale range 0-31 into correct actual brightness so percieved intensity is linear
 static u8 gamma_default[32] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
 			       0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07,
 			       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0E, 0x0F, 0x11,
 			       0x12, 0x14, 0x15, 0x17, 0x19, 0x1B, 0x1D, 0x1F,};
 
+//alternate gamma table with lower maxium brightness
 static u8 gamma_low[32] = {0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 			   0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02,
 			   0x03, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06,
 			   0x06, 0x07, 0x07, 0x08, 0x08, 0x09, 0x0A, 0x0A,};
 
+//this gamma table can be modified and selected by the user with ioctl command
 static u8 gamma_user[32];
 
 static u32 pseudo_palette[16];
@@ -83,7 +87,9 @@ static struct fb_var_screeninfo rpisense_fb_var = {
 	.green		= {5, 6, 0},
 	.blue		= {0, 5, 0},
 };
-
+//These functions basically are just wrappers around system functions except that they also schedule a screen refresh.
+//Is there any way to remove them and just say that the screen refresh function is schedule_delayed_work(...) and it
+//should be called any time the buffer is modified?
 static ssize_t rpisense_fb_write(struct fb_info *info,
 				 const char __user *buf, size_t count,
 				 loff_t *ppos)
@@ -124,9 +130,14 @@ static void rpisense_fb_deferred_io(struct fb_info *info,
 	u16 *mem = (u16 *)rpisense_fb_param.vmem;
 	u8 *gamma = rpisense_fb_param.gamma;
 
+	//if the rpisense_block_write function used the proper smb function the first byte would automatically
+	//be the address of the framebuffer register (0). Would make the buffer smaller (192 instead of 193)
+	//and remove this line as well as the gross offset of 1 that is all over the code below
 	vmem_work[0] = 0;
 	for (j = 0; j < 8; j++) {
 		for (i = 0; i < 8; i++) {
+			//this mess of magic numbers probably could be cleaned up tons by using
+			//better/more explicit data structures instead of just 1D arrays
 			vmem_work[(j * 24) + i + 1] =
 				gamma[(mem[(j * 8) + i] >> 11) & 0x1F];
 			vmem_work[(j * 24) + (i + 8) + 1] =
@@ -135,6 +146,7 @@ static void rpisense_fb_deferred_io(struct fb_info *info,
 				gamma[(mem[(j * 8) + i]) & 0x1F];
 		}
 	}
+	//The magic number 193 should be a #define or sizeof some data structure
 	rpisense_block_write(rpisense, vmem_work, 193);
 }
 
@@ -149,11 +161,13 @@ static int rpisense_fb_ioctl(struct fb_info *info, unsigned int cmd,
 	switch (cmd) {
 	case SENSEFB_FBIOGET_GAMMA:
 		if (copy_to_user((void __user *) arg, rpisense_fb_param.gamma,
+				//could be sizeof rpisense_fb_param.gamma instead of sizeof(u8[32])
 				 sizeof(u8[32])))
 			return -EFAULT;
 		return 0;
 	case SENSEFB_FBIOSET_GAMMA:
 		if (copy_from_user(gamma_user, (void __user *)arg,
+				//could be sizeof rpisense_fb_param.gamma instead of sizeof(u8[32])
 				   sizeof(u8[32])))
 			return -EFAULT;
 		rpisense_fb_param.gamma = gamma_user;
@@ -206,6 +220,7 @@ static int rpisense_fb_probe(struct platform_device *pdev)
 	if (!rpisense_fb_param.vmem)
 		return ret;
 
+	//magic number 193 again
 	rpisense_fb_param.vmem_work = devm_kmalloc(&pdev->dev, 193, GFP_KERNEL);
 	if (!rpisense_fb_param.vmem_work)
 		goto err_malloc;

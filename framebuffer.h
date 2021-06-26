@@ -16,6 +16,7 @@
 #ifndef __LINUX_RPISENSE_FB_H_
 #define __LINUX_RPISENSE_FB_H_
 
+//Maybe these values should be in a different header so users can include them for the ioctl stuff without getting everything else?
 #define SENSEFB_FBIO_IOC_MAGIC 0xF1
 
 #define SENSEFB_FBIOGET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 0)
