@@ -21,7 +21,7 @@
 static struct rpisense *rpisense;
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
-static void keys_work_fn(struct work_struct *work)
+static irqreturn_t keys_work_fn(int, void *)
 {
 	int i;
 	static s32 prev_keys;
@@ -39,13 +39,6 @@ static void keys_work_fn(struct work_struct *work)
 		keys >>= 1;
 	}
 	input_sync(rpisense_js->keys_dev);
-}
-
-static irqreturn_t keys_irq_handler(int irq, void *pdev)
-{
-	struct rpisense_js *rpisense_js = &rpisense->joystick;
-
-	schedule_work(&rpisense_js->keys_work_s);
 	return IRQ_HANDLED;
 }
 
@@ -57,8 +50,6 @@ static int rpisense_js_probe(struct platform_device *pdev)
 
 	rpisense = rpisense_get_dev();
 	rpisense_js = &rpisense->joystick;
-
-	INIT_WORK(&rpisense_js->keys_work_s, keys_work_fn);
 
 	rpisense_js->keys_dev = input_allocate_device();
 	if (!rpisense_js->keys_dev) {
@@ -99,9 +90,10 @@ static int rpisense_js_probe(struct platform_device *pdev)
 		goto err_keys_reg;
 	}
 
-	ret = devm_request_irq(&pdev->dev, rpisense_js->keys_irq,
-			       keys_irq_handler, IRQF_TRIGGER_RISING,
-			       "keys", &pdev->dev);
+	ret = devm_request_threaded_irq(&pdev->dev, rpisense_js->keys_irq,
+		NULL, keys_work_fn, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+		"keys", &pdev->dev);
+
 	if (ret) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
 		goto err_keys_reg;
