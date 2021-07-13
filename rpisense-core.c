@@ -115,7 +115,7 @@ s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 
 	if (ret < 0)
 		dev_err(rpisense->dev, "Read from reg %d failed\n", reg);
-	/* Due to the BCM270x I2C clock stretching bug, some values
+	/* Due to the BCM283x I2C clock stretching bug, some values
 	 * may have MSB set. Clear it to avoid incorrect values.
 	 * */
 	return ret & 0x7F;
