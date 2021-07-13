@@ -150,7 +150,6 @@ MODULE_DEVICE_TABLE(of, rpisense_core_id);
 static struct i2c_driver rpisense_driver = {
 	.driver = {
 		   .name = "rpi-sense",
-		   .owner = THIS_MODULE,
 	},
 	.probe = rpisense_probe,
 	.remove = rpisense_remove,

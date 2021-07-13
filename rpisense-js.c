@@ -142,7 +142,6 @@ static struct platform_driver rpisense_js_driver = {
 	.remove = rpisense_js_remove,
 	.driver = {
 		.name = "rpi-sense-js",
-		.owner = THIS_MODULE,
 	},
 };
 
