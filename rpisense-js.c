@@ -19,7 +19,7 @@
 #include "core.h"
 
 static struct rpisense *rpisense;
-static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
+static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
 static void keys_work_fn(struct work_struct *work)
 {
@@ -30,7 +30,7 @@ static void keys_work_fn(struct work_struct *work)
 	s32 changes = keys ^ prev_keys;
 
 	prev_keys = keys;
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
 		if (changes & 1) {
 			input_report_key(rpisense_js->keys_dev,
 					 keymap[i], keys & 1);
