@@ -64,7 +64,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 
 	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
 	if (ret > 0) {
-		if (ret != 's')
+		if (ret != RPISENSE_ID)
 			return -EINVAL;
 	} else {
 		return ret;
