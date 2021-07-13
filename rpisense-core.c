@@ -64,7 +64,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 
 	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
 	if (ret > 0) {
-		if (ret != 's')
+		if (ret != RPISENSE_ID)
 			return -EINVAL;
 	} else {
 		return ret;
@@ -81,11 +81,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 						"keys-int", GPIOD_IN);
 	if (IS_ERR(rpisense_js->keys_desc)) {
 		dev_warn(&i2c->dev, "Failed to get keys-int descriptor.\n");
-		rpisense_js->keys_desc = gpio_to_desc(23);
-		if (rpisense_js->keys_desc == NULL) {
-			dev_err(&i2c->dev, "GPIO23 fallback failed.\n");
-			return PTR_ERR(rpisense_js->keys_desc);
-		}
+		return PTR_ERR(rpisense_js->keys_desc);
 	}
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
@@ -115,7 +111,7 @@ s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 
 	if (ret < 0)
 		dev_err(rpisense->dev, "Read from reg %d failed\n", reg);
-	/* Due to the BCM270x I2C clock stretching bug, some values
+	/* Due to the BCM283x I2C clock stretching bug, some values
 	 * may have MSB set. Clear it to avoid incorrect values.
 	 * */
 	return ret & 0x7F;
@@ -150,7 +146,6 @@ MODULE_DEVICE_TABLE(of, rpisense_core_id);
 static struct i2c_driver rpisense_driver = {
 	.driver = {
 		   .name = "rpi-sense",
-		   .owner = THIS_MODULE,
 	},
 	.probe = rpisense_probe,
 	.remove = rpisense_remove,

@@ -184,7 +184,6 @@ static int rpisense_fb_ioctl(struct fb_info *info, unsigned int cmd,
 }
 
 static struct fb_ops rpisense_fb_ops = {
-	.owner		= THIS_MODULE,
 	.fb_read	= fb_sys_read,
 	.fb_write	= rpisense_fb_write,
 	.fb_fillrect	= rpisense_fb_fillrect,
@@ -284,7 +283,6 @@ static struct platform_driver rpisense_fb_driver = {
 	.remove = rpisense_fb_remove,
 	.driver = {
 		.name = "rpi-sense-fb",
-		.owner = THIS_MODULE,
 	},
 };
 
