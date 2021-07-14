@@ -18,13 +18,14 @@
 #include "joystick.h"
 #include "core.h"
 
-static struct rpisense *rpisense;
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
-static irqreturn_t keys_work_fn(int, void *)
+static irqreturn_t keys_work_fn(int, void *cookie)
 {
 	int i;
 	static s32 prev_keys;
+	struct device *dev = cookie;
+	struct rpisense *rpisense = dev_get_drvdata(dev->parent);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 	s32 keys = rpisense_reg_read(rpisense, RPISENSE_KEYS);
 	s32 changes = keys ^ prev_keys;
@@ -46,10 +47,8 @@ static int rpisense_js_probe(struct platform_device *pdev)
 {
 	int ret;
 	int i;
-	struct rpisense_js *rpisense_js;
-
-	rpisense = rpisense_get_dev();
-	rpisense_js = &rpisense->joystick;
+	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense_js *rpisense_js = &rpisense->joystick;
 
 	rpisense_js->keys_dev = input_allocate_device();
 	if (!rpisense_js->keys_dev) {
@@ -108,6 +107,7 @@ err_keys_alloc:
 
 static int rpisense_js_remove(struct platform_device *pdev)
 {
+	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 
 	input_unregister_device(rpisense_js->keys_dev);

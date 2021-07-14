@@ -23,8 +23,6 @@
 #include "core.h"
 #include <linux/slab.h>
 
-static struct rpisense *rpisense;
-
 static void rpisense_client_dev_register(struct rpisense *rpisense,
 					 const char *name,
 					 struct platform_device **pdev)
@@ -54,7 +52,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	int ret;
 	struct rpisense_js *rpisense_js;
 
-	rpisense = devm_kzalloc(&i2c->dev, sizeof(struct rpisense), GFP_KERNEL);
+	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof *rpisense, GFP_KERNEL);
 	if (rpisense == NULL)
 		return -ENOMEM;
 
@@ -99,11 +97,6 @@ static int rpisense_remove(struct i2c_client *i2c)
 	return 0;
 }
 
-struct rpisense *rpisense_get_dev(void)
-{
-	return rpisense;
-}
-EXPORT_SYMBOL_GPL(rpisense_get_dev);
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 {
