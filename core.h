@@ -39,7 +39,6 @@ struct rpisense {
 	struct rpisense_fb framebuffer;
 };
 
-struct rpisense *rpisense_get_dev(void);
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
 int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);

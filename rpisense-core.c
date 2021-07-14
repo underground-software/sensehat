@@ -97,11 +97,6 @@ static int rpisense_remove(struct i2c_client *i2c)
 	return 0;
 }
 
-struct rpisense *rpisense_get_dev(void)
-{
-	return rpisense;
-}
-EXPORT_SYMBOL_GPL(rpisense_get_dev);
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 {
