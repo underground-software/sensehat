@@ -31,8 +31,6 @@ static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
-static struct rpisense *rpisense;
-
 struct rpisense_fb_param {
 	char __iomem *vmem;
 	u8 *vmem_work;
@@ -118,6 +116,7 @@ static void rpisense_fb_imageblit(struct fb_info *info,
 static void rpisense_fb_deferred_io(struct fb_info *info,
 				struct list_head *pagelist)
 {
+	struct rpisense *rpisense = dev_get_drvdata(info->device->parent);
 	int i;
 	int j;
 	u8 *vmem_work = rpisense_fb_param.vmem_work;
@@ -196,10 +195,9 @@ static int rpisense_fb_probe(struct platform_device *pdev)
 {
 	struct fb_info *info;
 	int ret = -ENOMEM;
-	struct rpisense_fb *rpisense_fb;
 
-	rpisense = rpisense_get_dev();
-	rpisense_fb = &rpisense->framebuffer;
+	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 
 	rpisense_fb_param.vmem = vzalloc(rpisense_fb_param.vmemsize);
 	if (!rpisense_fb_param.vmem)
@@ -251,6 +249,7 @@ err_malloc:
 
 static int rpisense_fb_remove(struct platform_device *pdev)
 {
+	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 	struct fb_info *info = rpisense_fb->info;
 
