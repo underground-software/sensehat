@@ -22,11 +22,14 @@
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 =======
 =======
 >>>>>>> ea10db8 (framebuffer testfile)
+=======
+>>>>>>> a8e899b (new char driver)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
@@ -41,8 +44,23 @@
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+=======
+=======
+/*
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/framebuffer.h>
+*/
+
+#include "joystick.h"
+#include "framebuffer.h"
+>>>>>>> 86a0552 (new char driver)
+>>>>>>> a8e899b (new char driver)
+>>>>>>> a750644 (new char driver)
 
 /*
  * Register values.
@@ -66,17 +84,29 @@ struct rpisense {
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	struct rpisense_fb framebuffer;
 =======
 	struct rpisense_cd char_dev;
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
 =======
+=======
+>>>>>>> a8e899b (new char driver)
 	struct rpisense_cd char_dev;
 =======
 	struct rpisense_fb framebuffer;
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+=======
+=======
+	struct rpisense_cd char_dev;
+>>>>>>> 86a0552 (new char driver)
+>>>>>>> a8e899b (new char driver)
+>>>>>>> a750644 (new char driver)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);

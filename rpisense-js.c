@@ -17,17 +17,22 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
 =======
 =======
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+>>>>>>> a750644 (new char driver)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
 =======
 =======
 >>>>>>> ea10db8 (framebuffer testfile)
+=======
+>>>>>>> a8e899b (new char driver)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
@@ -46,8 +51,24 @@
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+=======
+=======
+/*
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/core.h>
+*/
+
+#include "joystick.h"
+#include "core.h"
+
+>>>>>>> 86a0552 (new char driver)
+>>>>>>> a8e899b (new char driver)
+>>>>>>> a750644 (new char driver)
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 

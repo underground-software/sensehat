@@ -22,12 +22,15 @@
 #include <linux/platform_device.h>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "core.h"
 #include <linux/slab.h>
 
 =======
 =======
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+>>>>>>> a750644 (new char driver)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
@@ -35,6 +38,8 @@
 =======
 =======
 >>>>>>> ea10db8 (framebuffer testfile)
+=======
+>>>>>>> a8e899b (new char driver)
 //#include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
 
@@ -48,7 +53,17 @@
 #include <linux/slab.h>
 
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+=======
+=======
+//#include <linux/mfd/rpisense/core.h>
+#include <linux/slab.h>
+
+#include "core.h"
+
+>>>>>>> 86a0552 (new char driver)
+>>>>>>> a8e899b (new char driver)
 static struct rpisense *rpisense;
 
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
@@ -115,16 +130,25 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				     &(rpisense->framebuffer.pdev));
 =======
 				     &(rpisense->char_dev.pdev));
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
 =======
+=======
+>>>>>>> a8e899b (new char driver)
 				     &(rpisense->char_dev.pdev));
 =======
 				     &(rpisense->framebuffer.pdev));
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+=======
+=======
+				     &(rpisense->char_dev.pdev));
+>>>>>>> 86a0552 (new char driver)
+>>>>>>> a8e899b (new char driver)
 
 	return 0;
 }
