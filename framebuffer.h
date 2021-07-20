@@ -52,9 +52,16 @@ struct rpisense_fb {
 =======
 struct rpisense_cd {
 	struct platform_device *pdev;
+<<<<<<< HEAD
 	struct cdev *c_dev;
 >>>>>>> 86a0552 (new char driver)
+<<<<<<< HEAD
 >>>>>>> a8e899b (new char driver)
+=======
+=======
+	struct miscdevice *c_dev;
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
+>>>>>>> cc74e0b (char device to replace framebuffer)
 };
 
 #endif

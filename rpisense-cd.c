@@ -59,8 +59,11 @@ static struct miscdevice sense_mdev = {
 
 
 struct rpisense_param {
+<<<<<<< HEAD
 	char *rdata;
 	//u8 *rmem;
+=======
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
 	char __iomem *vmem;
 	u8 *vmem_work;
 	u32 vmemsize;
@@ -83,17 +86,33 @@ static struct rpisense *rpisense;
 
 static int sense_open(struct inode *inode, struct file *file)
 {
+<<<<<<< HEAD
 	if ((rpisense_param.rdata = kmalloc(MEM_SIZE, GFP_KERNEL)) == 0){
 		pr_info("Failed to allocate memory...\n");
 		return -1;
 	}
+=======
+	/*
+	if ((kernel_buffer = kmalloc(MEM_SIZE, GFP_KERNEL)) == 0) {
+		pr_info("Failed to allocater memory....\n");
+		return -1;
+	}
+	*/
+
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
         pr_info("Device File Opened...!!!\n");
         return 0;
 }
 
 static int sense_release(struct inode *inode, struct file *file)
 {
+<<<<<<< HEAD
 	kfree(rpisense_param.rdata);
+=======
+
+	/*  kfree(kernel_buffer);  */
+
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
         pr_info("Device File Closed...!!!\n");
         return 0;
 }
@@ -101,10 +120,20 @@ static int sense_release(struct inode *inode, struct file *file)
 static ssize_t sense_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
 
+<<<<<<< HEAD
 	rpisense_block_read(rpisense, rpisense_param.rdata, MEM_SIZE);
 	if (copy_to_user(buf, rpisense_param.rdata, MEM_SIZE)) {
                 pr_err("Error: Data not read.\n");
         }
+=======
+	/*
+
+	if (copy_to_user(buf, kernel_buffer, MEM_SIZE)) {
+		pr_err("Error: Data not read.\n");
+	}
+
+	*/
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
 
         pr_info("Read Function\n");
         return 0;
@@ -161,6 +190,7 @@ static int rpisense_driver_probe(struct platform_device *pdev)
 	if (!rpisense_param.vmem_work)
 		goto error_malloc; 		
 
+<<<<<<< HEAD
 	/*
 	rpisense_param.rmem = devm_kmalloc(&pdev->dev, MEM_SIZE, GFP_KERNEL);
 	if (!rpisense_param.rmem)
@@ -170,13 +200,18 @@ static int rpisense_driver_probe(struct platform_device *pdev)
 
 	*/
 
+=======
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
 	rpisense = dev_get_drvdata(pdev->dev.parent);
 	rpisense_cd = &rpisense->char_dev;
 	
 	ret = misc_register(&sense_mdev);
 	if (ret != 0) {
 		pr_err("could not register misc device...\n");
+<<<<<<< HEAD
 		goto error_malloc;
+=======
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
 	}
 
 	pr_info("Misc minor number: %i\n", sense_mdev.minor);

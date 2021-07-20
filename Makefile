@@ -1,11 +1,14 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
 .PHONY: build clean load
 =======
 =======
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+>>>>>>> 5ea0f9a (char device to replace framebuffer)
 <<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
 =======
@@ -15,12 +18,23 @@ obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
 =======
 =======
+=======
+>>>>>>> cc74e0b (char device to replace framebuffer)
 obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 =======
 obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
 >>>>>>> b54532f (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ea10db8 (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+=======
+=======
+obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
+>>>>>>> b9a4fe0 (char device to replace framebuffer)
+>>>>>>> cc74e0b (char device to replace framebuffer)
+>>>>>>> 5ea0f9a (char device to replace framebuffer)
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
