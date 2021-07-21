@@ -53,22 +53,30 @@ static int rpisense_probe(struct i2c_client *i2c,
 {
 	int ret;
 	struct rpisense_js *rpisense_js;
+	// TODO: why this lone ptr?
 
+	// allocate memory for main device struct
 	rpisense = devm_kzalloc(&i2c->dev, sizeof(struct rpisense), GFP_KERNEL);
 	if (rpisense == NULL)
 		return -ENOMEM;
 
+	// set driver data to our rpisense struct (i2c->dev->driver_Data)
 	i2c_set_clientdata(i2c, rpisense);
+	// then set the device to the i2c client's device
 	rpisense->dev = &i2c->dev;
+	// and of course the rpisense's i2c client is the one we are passed
 	rpisense->i2c_client = i2c;
 
+	// sanity test I think:
 	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
 	if (ret > 0) {
 		if (ret != 's')
+			// RPISENSE_ID
 			return -EINVAL;
 	} else {
 		return ret;
 	}
+	// another sanity test but no actual verification?
 	ret = rpisense_reg_read(rpisense, RPISENSE_VER);
 	if (ret < 0)
 		return ret;
