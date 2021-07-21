@@ -60,10 +60,14 @@ static struct miscdevice sense_mdev = {
 
 struct rpisense_param {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	char *rdata;
 	//u8 *rmem;
 =======
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
+=======
+	char * rdata;
+>>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
 	char __iomem *vmem;
 	u8 *vmem_work;
 	u32 vmemsize;
@@ -87,6 +91,7 @@ static struct rpisense *rpisense;
 static int sense_open(struct inode *inode, struct file *file)
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if ((rpisense_param.rdata = kmalloc(MEM_SIZE, GFP_KERNEL)) == 0){
 		pr_info("Failed to allocate memory...\n");
 		return -1;
@@ -95,9 +100,12 @@ static int sense_open(struct inode *inode, struct file *file)
 	/*
 	if ((kernel_buffer = kmalloc(MEM_SIZE, GFP_KERNEL)) == 0) {
 		pr_info("Failed to allocater memory....\n");
+=======
+	if ((rpisense_param.rdata = kmalloc(MEM_SIZE, GFP_KERNEL)) == 0) {
+		pr_info("Failed to allocate memory....\n");
+>>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
 		return -1;
 	}
-	*/
 
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
         pr_info("Device File Opened...!!!\n");
@@ -110,7 +118,7 @@ static int sense_release(struct inode *inode, struct file *file)
 	kfree(rpisense_param.rdata);
 =======
 
-	/*  kfree(kernel_buffer);  */
+	kfree(rpisense_param.rdata);  
 
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
         pr_info("Device File Closed...!!!\n");
@@ -119,6 +127,7 @@ static int sense_release(struct inode *inode, struct file *file)
 
 static ssize_t sense_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 	rpisense_block_read(rpisense, rpisense_param.rdata, MEM_SIZE);
@@ -134,6 +143,13 @@ static ssize_t sense_read(struct file *filp, char __user *buf, size_t len, loff_
 
 	*/
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
+=======
+	rpisense_block_read(rpisense, rpisense_param.rdata, MEM_SIZE);
+	if (copy_to_user(buf, rpisense_param.rdata, MEM_SIZE)) {
+		pr_err("Error: Data not read.\n");
+	}
+
+>>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
 
         pr_info("Read Function\n");
         return 0;

@@ -117,6 +117,7 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
@@ -125,6 +126,17 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 =======
 >>>>>>> b54532f (framebuffer testfile)
 >>>>>>> ea10db8 (framebuffer testfile)
+<<<<<<< HEAD
 >>>>>>> ed899c1 (framebuffer testfile)
+=======
+=======
+int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
+=======
+>>>>>>> b54532f (framebuffer testfile)
+=======
+int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
+>>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
+>>>>>>> 421ef24 (rpisense-cd.c with read functionality)
+>>>>>>> f4c8cfc (rpisense-cd.c with read functionality)
 
 #endif
