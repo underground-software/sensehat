@@ -15,8 +15,24 @@
 
 #include <linux/module.h>
 
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
+=======
+<<<<<<< HEAD
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/core.h>
+=======
+/*
+#include <linux/mfd/rpisense/joystick.h>
+#include <linux/mfd/rpisense/core.h>
+*/
+
+#include "joystick.h"
+#include "core.h"
+
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+>>>>>>> 639469e (rpisense-cd.c with read functionality)
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 

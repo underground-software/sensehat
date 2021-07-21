@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Raspberry Pi Sense HAT core driver
  * http://raspberrypi.org
@@ -5,19 +6,16 @@
  * Copyright (C) 2015 Raspberry Pi
  *
  * Author: Serge Schneider
- *
- *  This program is free software; you can redistribute  it and/or modify it
- *  under  the terms of  the GNU General  Public License as published by the
- *  Free Software Foundation;  either version 2 of the  License, or (at your
- *  option) any later version.
- *
+ * Adapted for mainline Linux by: Joel Savitz
  */
 
 #ifndef __LINUX_MFD_RPISENSE_CORE_H_
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
-#include "joystick.h"
-#include "framebuffer.h"
+#include <linux/input.h>
+#include <linux/interrupt.h>
+#include <linux/gpio/consumer.h>
+#include <linux/platform_device.h>
 
 /*
  * Register values.
@@ -30,18 +28,39 @@
 
 #define RPISENSE_ID			's'
 
+#define SENSEFB_FBIO_IOC_MAGIC 0xF1
+
+#define SENSEFB_FBIOGET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 0)
+#define SENSEFB_FBIOSET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 1)
+#define SENSEFB_FBIORESET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 2)
+
+struct rpisense_fb {
+	struct platform_device *pdev;
+	struct fb_info *info;
+};
+
+
+struct rpisense_js {
+	struct platform_device *pdev;
+	struct input_dev *keys_dev;
+	struct gpio_desc *keys_desc;
+	struct work_struct keys_work_s;
+	int keys_irq;
+};
+
+
 struct rpisense {
 	struct device *dev;
 	struct i2c_client *i2c_client;
 
 	/* Client devices */
 	struct rpisense_js joystick;
-	struct rpisense_cd char_dev;
+	struct rpisense_fb framebuffer;
 };
 
+struct rpisense *rpisense_get_dev(void);
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
 int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 
 #endif

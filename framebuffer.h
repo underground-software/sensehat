@@ -24,9 +24,15 @@
 
 struct rpisense;
 
+<<<<<<< HEAD
 struct rpisense_fb {
 	struct platform_device *pdev;
 	struct fb_info *info;
+=======
+struct rpisense_cd {
+	struct platform_device *pdev;
+	struct miscdevice *c_dev;
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
 };
 
 #endif

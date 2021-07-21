@@ -1,6 +1,14 @@
+<<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
 .PHONY: build clean load
+=======
+<<<<<<< HEAD
+obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
+=======
+obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
+>>>>>>> 6a892bc (rpisense-cd.c with read functionality)
+>>>>>>> 639469e (rpisense-cd.c with read functionality)
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
