@@ -36,6 +36,7 @@
 */
 
 #include "joystick.h"
+<<<<<<< HEAD
 #include "framebuffer.h"
 <<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
@@ -59,8 +60,17 @@
 #include "joystick.h"
 #include "framebuffer.h"
 >>>>>>> 86a0552 (new char driver)
+<<<<<<< HEAD
 >>>>>>> a8e899b (new char driver)
+<<<<<<< HEAD
 >>>>>>> a750644 (new char driver)
+=======
+=======
+=======
+#include "display.h"
+>>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+>>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
 
 /*
  * Register values.
@@ -85,6 +95,7 @@ struct rpisense {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	struct rpisense_fb framebuffer;
 =======
 	struct rpisense_cd char_dev;
@@ -92,6 +103,8 @@ struct rpisense {
 =======
 =======
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
 	struct rpisense_cd char_dev;
 =======
 	struct rpisense_fb framebuffer;
@@ -105,8 +118,17 @@ struct rpisense {
 =======
 	struct rpisense_cd char_dev;
 >>>>>>> 86a0552 (new char driver)
+<<<<<<< HEAD
 >>>>>>> a8e899b (new char driver)
+<<<<<<< HEAD
 >>>>>>> a750644 (new char driver)
+=======
+=======
+=======
+	struct rpisense_disp display;
+>>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+>>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);

@@ -131,6 +131,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				     &(rpisense->framebuffer.pdev));
 =======
 				     &(rpisense->char_dev.pdev));
@@ -138,6 +139,8 @@ static int rpisense_probe(struct i2c_client *i2c,
 =======
 =======
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
 				     &(rpisense->char_dev.pdev));
 =======
 				     &(rpisense->framebuffer.pdev));
@@ -148,7 +151,13 @@ static int rpisense_probe(struct i2c_client *i2c,
 =======
 				     &(rpisense->char_dev.pdev));
 >>>>>>> 86a0552 (new char driver)
+<<<<<<< HEAD
 >>>>>>> a8e899b (new char driver)
+=======
+=======
+				     &(rpisense->display.pdev));
+>>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
 
 	return 0;
 }
@@ -223,8 +232,15 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count)
 }
 EXPORT_SYMBOL_GPL(rpisense_block_read);
 
+<<<<<<< HEAD
 >>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
+<<<<<<< HEAD
 >>>>>>> 421ef24 (rpisense-cd.c with read functionality)
+=======
+=======
+
+>>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },
 	{ }

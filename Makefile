@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
 .PHONY: build clean load
@@ -9,6 +10,8 @@ obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 >>>>>>> ed899c1 (framebuffer testfile)
 =======
 >>>>>>> 5ea0f9a (char device to replace framebuffer)
+=======
+>>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
 <<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
 =======
@@ -20,6 +23,8 @@ obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 =======
 =======
 >>>>>>> cc74e0b (char device to replace framebuffer)
+=======
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
 obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 =======
 obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
@@ -33,8 +38,17 @@ obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
 =======
 obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
+<<<<<<< HEAD
 >>>>>>> cc74e0b (char device to replace framebuffer)
+<<<<<<< HEAD
 >>>>>>> 5ea0f9a (char device to replace framebuffer)
+=======
+=======
+=======
+obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
+>>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
+>>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+>>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
