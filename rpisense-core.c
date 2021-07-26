@@ -54,6 +54,8 @@ static int rpisense_probe(struct i2c_client *i2c,
 	int ret;
 	struct rpisense_js *rpisense_js;
 	// TODO: why this lone ptr?
+	// looks like it's just a convenience thing for later, but it's unnecessary,
+	// we really want keys_desc. Actually it kinda makes sense
 
 	// allocate memory for main device struct
 	rpisense = devm_kzalloc(&i2c->dev, sizeof(struct rpisense), GFP_KERNEL);
@@ -81,20 +83,32 @@ static int rpisense_probe(struct i2c_client *i2c,
 	if (ret < 0)
 		return ret;
 
+	// print the firmware version
 	dev_info(rpisense->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
+	// get joystick field address in struct (struct rpisense_js)
 	rpisense_js = &rpisense->joystick;
+	// Acquire access to gpio input
+	// get device managed gpiod descriptor for our struct device
 	rpisense_js->keys_desc = devm_gpiod_get(&i2c->dev,
 						"keys-int", GPIOD_IN);
+	// keys-int-gpios is the name in device tree, we are taking input
+	
+
+	// on failure, devm_gpiod_get returns an err ptr
 	if (IS_ERR(rpisense_js->keys_desc)) {
 		dev_warn(&i2c->dev, "Failed to get keys-int descriptor.\n");
+		// Try to use old integer interface
 		rpisense_js->keys_desc = gpio_to_desc(23);
+		// if that fails too, we are screwed
 		if (rpisense_js->keys_desc == NULL) {
 			dev_err(&i2c->dev, "GPIO23 fallback failed.\n");
+			// bail!
 			return PTR_ERR(rpisense_js->keys_desc);
 		}
 	}
+	// register client devices
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
@@ -107,7 +121,10 @@ static int rpisense_remove(struct i2c_client *i2c)
 {
 	struct rpisense *rpisense = i2c_get_clientdata(i2c);
 
+	// 
 	platform_device_unregister(rpisense->joystick.pdev);
+	
+	// I assume i2c core frees all of the other allocated memory?
 	return 0;
 }
 
