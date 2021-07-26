@@ -18,6 +18,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
 =======
@@ -25,6 +26,8 @@
 >>>>>>> ed899c1 (framebuffer testfile)
 =======
 >>>>>>> a750644 (new char driver)
+=======
+>>>>>>> 067e75a (commit to merge with master)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
@@ -33,6 +36,8 @@
 >>>>>>> ea10db8 (framebuffer testfile)
 =======
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
@@ -41,6 +46,7 @@
 #include "joystick.h"
 #include "core.h"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
 <<<<<<< HEAD
@@ -70,7 +76,14 @@
 >>>>>>> a8e899b (new char driver)
 >>>>>>> a750644 (new char driver)
 
+<<<<<<< HEAD
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
+=======
+=======
+>>>>>>> 3bae669 (commit to merge with master)
+static struct rpisense *rpisense;
+static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
+>>>>>>> 067e75a (commit to merge with master)
 
 static irqreturn_t keys_work_fn(int, void *cookie)
 {

@@ -23,6 +23,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 =======
@@ -30,12 +31,15 @@
 >>>>>>> ea10db8 (framebuffer testfile)
 =======
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 */
 
 #include "joystick.h"
+<<<<<<< HEAD
 <<<<<<< HEAD
 #include "framebuffer.h"
 <<<<<<< HEAD
@@ -70,7 +74,13 @@
 #include "display.h"
 >>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
 >>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+<<<<<<< HEAD
 >>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
+=======
+=======
+#include "display.h"
+>>>>>>> 3bae669 (commit to merge with master)
+>>>>>>> 067e75a (commit to merge with master)
 
 /*
  * Register values.
@@ -92,6 +102,7 @@ struct rpisense {
 <<<<<<< HEAD
 	struct rpisense_cd char_dev;
 =======
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -128,7 +139,13 @@ struct rpisense {
 	struct rpisense_disp display;
 >>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
 >>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+<<<<<<< HEAD
 >>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
+=======
+=======
+	struct rpisense_disp display;
+>>>>>>> 3bae669 (commit to merge with master)
+>>>>>>> 067e75a (commit to merge with master)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
@@ -137,6 +154,7 @@ int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
 <<<<<<< HEAD
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 =======
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -159,6 +177,11 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 >>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
 >>>>>>> 421ef24 (rpisense-cd.c with read functionality)
+<<<<<<< HEAD
 >>>>>>> f4c8cfc (rpisense-cd.c with read functionality)
+=======
+=======
+>>>>>>> 3bae669 (commit to merge with master)
+>>>>>>> 067e75a (commit to merge with master)
 
 #endif

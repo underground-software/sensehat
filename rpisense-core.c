@@ -23,6 +23,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "core.h"
 #include <linux/slab.h>
 
@@ -31,6 +32,8 @@
 >>>>>>> ed899c1 (framebuffer testfile)
 =======
 >>>>>>> a750644 (new char driver)
+=======
+>>>>>>> 067e75a (commit to merge with master)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
@@ -40,11 +43,14 @@
 >>>>>>> ea10db8 (framebuffer testfile)
 =======
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 //#include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
 
 #include "core.h"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 6a892bc (rpisense-cd.c with read functionality)
 =======
@@ -57,13 +63,15 @@
 >>>>>>> ea10db8 (framebuffer testfile)
 =======
 =======
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 //#include <linux/mfd/rpisense/core.h>
-#include <linux/slab.h>
 
-#include "core.h"
-
+<<<<<<< HEAD
 >>>>>>> 86a0552 (new char driver)
 >>>>>>> a8e899b (new char driver)
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 static struct rpisense *rpisense;
 
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
@@ -132,6 +140,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				     &(rpisense->framebuffer.pdev));
 =======
 				     &(rpisense->char_dev.pdev));
@@ -158,6 +167,9 @@ static int rpisense_probe(struct i2c_client *i2c,
 				     &(rpisense->display.pdev));
 >>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
 >>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+=======
+				     &(rpisense->display.pdev));
+>>>>>>> 3bae669 (commit to merge with master)
 
 	return 0;
 }
@@ -194,6 +206,7 @@ int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 }
 EXPORT_SYMBOL_GPL(rpisense_block_write);
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -241,6 +254,8 @@ EXPORT_SYMBOL_GPL(rpisense_block_read);
 
 >>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
 >>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+=======
+>>>>>>> 3bae669 (commit to merge with master)
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },
 	{ }

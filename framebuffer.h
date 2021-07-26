@@ -27,6 +27,7 @@ struct rpisense;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 struct rpisense_fb {
 	struct platform_device *pdev;
 	struct fb_info *info;
@@ -62,6 +63,11 @@ struct rpisense_cd {
 	struct miscdevice *c_dev;
 >>>>>>> b9a4fe0 (char device to replace framebuffer)
 >>>>>>> cc74e0b (char device to replace framebuffer)
+=======
+struct rpisense_fb {
+	struct platform_device *pdev;
+	struct fb_info *info;
+>>>>>>> 3bae669 (commit to merge with master)
 };
 
 #endif

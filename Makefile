@@ -2,6 +2,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
 .PHONY: build clean load
@@ -12,6 +13,8 @@ obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 >>>>>>> 5ea0f9a (char device to replace framebuffer)
 =======
 >>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
+=======
+>>>>>>> 067e75a (commit to merge with master)
 <<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-fb.o rpisense-js.o
 =======
@@ -48,7 +51,13 @@ obj-m += rpisense-core.o rpisense-cd.o rpisense-js.o
 obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
 >>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
 >>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
+<<<<<<< HEAD
 >>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
+=======
+=======
+obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
+>>>>>>> 3bae669 (commit to merge with master)
+>>>>>>> 067e75a (commit to merge with master)
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
