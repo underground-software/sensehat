@@ -24,6 +24,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 =======
@@ -56,11 +57,15 @@
 =======
 =======
 =======
+=======
+>>>>>>> 7c4b617 (new display driver)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 */
 
+=======
+>>>>>>> bfd00fb (new display driver)
 #include "joystick.h"
 #include "framebuffer.h"
 >>>>>>> 86a0552 (new char driver)

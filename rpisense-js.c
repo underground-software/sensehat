@@ -19,6 +19,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
 =======
@@ -28,6 +29,8 @@
 >>>>>>> a750644 (new char driver)
 =======
 >>>>>>> 067e75a (commit to merge with master)
+=======
+>>>>>>> ab5a08d (new display driver)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
@@ -38,11 +41,15 @@
 >>>>>>> a8e899b (new char driver)
 =======
 >>>>>>> 3bae669 (commit to merge with master)
+=======
+>>>>>>> 7c4b617 (new display driver)
 /*
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/core.h>
 */
 
+=======
+>>>>>>> bfd00fb (new display driver)
 #include "joystick.h"
 #include "core.h"
 
