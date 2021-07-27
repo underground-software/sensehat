@@ -186,39 +186,39 @@ static int rpisense_driver_remove(struct platform_device *pdev)
 
 #ifdef CONFIG_OF // CONFIG_OF is derived by the kernel from .config file 
 
-/* structure used to find the framebuffer driver described in the device tree */
-static const struct of_device_id rpisense_fb_id[] = {
-	{ .compatible = "rpi,rpi-sense-fb" },
-	{ },
+/* structure used to find the display driver described in the device tree */
+static const struct of_device_id rpisense_display_id[] = {
+	{ .compatible = "rpi,rpi-sense-display" },
+        { },
 };
 
 /* 
    Macro is necessary to allow user-space tools to figure out what devices 
-   the framebuffer driver can control.
+   the display driver can control.
  */ 
-MODULE_DEVICE_TABLE(of, rpisense_fb_id); 
+MODULE_DEVICE_TABLE(of, rpisense_display_id); 
 #endif
 
 /* Used by bus code to bind actual device to driver */
-static struct platform_device_id rpisense_fb_device_id[] = {
-	{ .name = "rpi-sense-fb" },
+static struct platform_device_id rpisense_display_device_id[] = {
+	{ .name = "rpi-sense-display" },
 	{ },
 };
-MODULE_DEVICE_TABLE(platform, rpisense_fb_device_id);
+MODULE_DEVICE_TABLE(platform, rpisense_display_device_id);
 
 
-/* Structure used to register platform device (framebuffer device) */
-static struct platform_driver rpisense_fb_driver = {
+/* Structure used to register platform device (display device) */
+static struct platform_driver rpisense_display_driver = {
 	.probe = rpisense_driver_probe,
 	.remove = rpisense_driver_remove,
 	.driver = {
-		.name = "rpi-sense-fb",
+		.name = "rpi-sense-display",
 		.owner = THIS_MODULE,
 	},
 };
 
 /* used in place of module_init and module_exit which are called at moudule insertion and exit time */
-module_platform_driver(rpisense_fb_driver);
+module_platform_driver(rpisense_display_driver);
 
 /* Module description and licensing */ 
 MODULE_DESCRIPTION("Sense Hat display driver");

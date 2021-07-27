@@ -128,7 +128,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	}
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
-	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
+	rpisense_client_dev_register(rpisense, "rpi-sense-display",
 				     &(rpisense->display.pdev));
 
 	return 0;
