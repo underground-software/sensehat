@@ -21,6 +21,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
 =======
@@ -93,6 +94,11 @@ static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEF
 =======
 =======
 >>>>>>> 3bae669 (commit to merge with master)
+=======
+#include "joystick.h"
+#include "core.h"
+
+>>>>>>> 2d13fca (new display driver)
 static struct rpisense *rpisense;
 static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 >>>>>>> 067e75a (commit to merge with master)

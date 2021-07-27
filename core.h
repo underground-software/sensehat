@@ -17,6 +17,7 @@
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "joystick.h"
 #include "framebuffer.h"
 =======
@@ -64,12 +65,11 @@
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 */
+=======
+>>>>>>> 2d13fca (new display driver)
 
-=======
->>>>>>> bfd00fb (new display driver)
-=======
->>>>>>> f61cc5a (new display driver)
 #include "joystick.h"
+<<<<<<< HEAD
 #include "framebuffer.h"
 >>>>>>> 86a0552 (new char driver)
 <<<<<<< HEAD
@@ -89,6 +89,9 @@
 #include "display.h"
 >>>>>>> 3bae669 (commit to merge with master)
 >>>>>>> 067e75a (commit to merge with master)
+=======
+#include "display.h"
+>>>>>>> 2d13fca (new display driver)
 
 /*
  * Register values.
@@ -107,6 +110,7 @@ struct rpisense {
 
 	/* Client devices */
 	struct rpisense_js joystick;
+<<<<<<< HEAD
 <<<<<<< HEAD
 	struct rpisense_cd char_dev;
 =======
@@ -154,11 +158,15 @@ struct rpisense {
 	struct rpisense_disp display;
 >>>>>>> 3bae669 (commit to merge with master)
 >>>>>>> 067e75a (commit to merge with master)
+=======
+	struct rpisense_disp display;
+>>>>>>> 2d13fca (new display driver)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
 int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
+<<<<<<< HEAD
 <<<<<<< HEAD
 int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 =======
@@ -191,5 +199,7 @@ int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
 =======
 >>>>>>> 3bae669 (commit to merge with master)
 >>>>>>> 067e75a (commit to merge with master)
+=======
+>>>>>>> 2d13fca (new display driver)
 
 #endif

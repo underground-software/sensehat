@@ -3,6 +3,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
 .PHONY: build clean load
@@ -58,6 +59,9 @@ obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
 obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
 >>>>>>> 3bae669 (commit to merge with master)
 >>>>>>> 067e75a (commit to merge with master)
+=======
+obj-m += rpisense-core.o rpisense-display.o rpisense-js.o
+>>>>>>> 2d13fca (new display driver)
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)

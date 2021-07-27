@@ -26,6 +26,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "core.h"
 #include <linux/slab.h>
 
@@ -58,42 +59,12 @@
 >>>>>>> bfd00fb (new display driver)
 =======
 >>>>>>> f61cc5a (new display driver)
+=======
+>>>>>>> 2d13fca (new display driver)
 #include <linux/slab.h>
 
 #include "core.h"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-=======
-#include <linux/mfd/rpisense/core.h>
-#include <linux/slab.h>
-
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-=======
-=======
-=======
->>>>>>> 3bae669 (commit to merge with master)
-//#include <linux/mfd/rpisense/core.h>
-
-<<<<<<< HEAD
->>>>>>> 86a0552 (new char driver)
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 3bae669 (commit to merge with master)
-=======
-//#include <linux/mfd/rpisense/core.h>
-
-=======
->>>>>>> bfd00fb (new display driver)
->>>>>>> 7c4b617 (new display driver)
-=======
->>>>>>> f61cc5a (new display driver)
 static struct rpisense *rpisense;
 
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
@@ -158,40 +129,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-				     &(rpisense->framebuffer.pdev));
-=======
-				     &(rpisense->char_dev.pdev));
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-=======
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-				     &(rpisense->char_dev.pdev));
-=======
-				     &(rpisense->framebuffer.pdev));
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-=======
-=======
-				     &(rpisense->char_dev.pdev));
->>>>>>> 86a0552 (new char driver)
-<<<<<<< HEAD
->>>>>>> a8e899b (new char driver)
-=======
-=======
 				     &(rpisense->display.pdev));
->>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-=======
-				     &(rpisense->display.pdev));
->>>>>>> 3bae669 (commit to merge with master)
 
 	return 0;
 }
@@ -228,56 +166,6 @@ int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 }
 EXPORT_SYMBOL_GPL(rpisense_block_write);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> ea10db8 (framebuffer testfile)
-=======
->>>>>>> 421ef24 (rpisense-cd.c with read functionality)
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count)
-{
-	int ret = i2c_master_recv(rpisense->i2c_client, buf, count);
-
-	if (ret < 0)
-		dev_err(rpisense->dev, "Block read failed\n");
-	return ret;
-
-}
-EXPORT_SYMBOL_GPL(rpisense_block_read);
-
-<<<<<<< HEAD
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-=======
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-=======
-=======
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count)
-{
-        int ret = i2c_master_recv(rpisense->i2c_client, buf, count);
-
-        if (ret < 0)
-                dev_err(rpisense->dev, "Block read failed\n");
-        return ret;
-}
-EXPORT_SYMBOL_GPL(rpisense_block_read);
-
-<<<<<<< HEAD
->>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
-<<<<<<< HEAD
->>>>>>> 421ef24 (rpisense-cd.c with read functionality)
-=======
-=======
-
->>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-=======
->>>>>>> 3bae669 (commit to merge with master)
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },
 	{ }
