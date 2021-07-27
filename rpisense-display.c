@@ -34,12 +34,6 @@
 #include "display.h"
 #include "core.h"
 
-/*
-#include <linux/mfd/rpisense/framebuffer.h>
-#include <linux/mfd/rpisense/core.h>
-*/
-
-
 #define MEM_SIZE 193
 
 /*   Function prototypes  */

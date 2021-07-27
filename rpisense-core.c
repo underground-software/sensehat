@@ -25,6 +25,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "core.h"
 #include <linux/slab.h>
 
@@ -37,6 +38,8 @@
 >>>>>>> 067e75a (commit to merge with master)
 =======
 >>>>>>> ab5a08d (new display driver)
+=======
+>>>>>>> 287233f (new display driver)
 <<<<<<< HEAD
 #include <linux/mfd/rpisense/core.h>
 #include <linux/slab.h>
@@ -53,10 +56,13 @@
 //#include <linux/mfd/rpisense/core.h>
 =======
 >>>>>>> bfd00fb (new display driver)
+=======
+>>>>>>> f61cc5a (new display driver)
 #include <linux/slab.h>
 
 #include "core.h"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -86,6 +92,8 @@
 =======
 >>>>>>> bfd00fb (new display driver)
 >>>>>>> 7c4b617 (new display driver)
+=======
+>>>>>>> f61cc5a (new display driver)
 static struct rpisense *rpisense;
 
 >>>>>>> 639469e (rpisense-cd.c with read functionality)
