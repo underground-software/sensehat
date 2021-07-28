@@ -16,82 +16,8 @@
 #ifndef __LINUX_MFD_RPISENSE_CORE_H_
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include "joystick.h"
-#include "framebuffer.h"
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/framebuffer.h>
-=======
-=======
->>>>>>> ea10db8 (framebuffer testfile)
-=======
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 3bae669 (commit to merge with master)
-/*
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/framebuffer.h>
-*/
-
-#include "joystick.h"
-<<<<<<< HEAD
-<<<<<<< HEAD
-#include "framebuffer.h"
-<<<<<<< HEAD
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-=======
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/framebuffer.h>
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ed899c1 (framebuffer testfile)
-=======
-=======
-=======
-=======
->>>>>>> 7c4b617 (new display driver)
-/*
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/framebuffer.h>
-*/
-=======
->>>>>>> 2d13fca (new display driver)
-
-#include "joystick.h"
-<<<<<<< HEAD
-#include "framebuffer.h"
->>>>>>> 86a0552 (new char driver)
-<<<<<<< HEAD
->>>>>>> a8e899b (new char driver)
-<<<<<<< HEAD
->>>>>>> a750644 (new char driver)
-=======
-=======
-=======
 #include "display.h"
->>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-<<<<<<< HEAD
->>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
-=======
-=======
-#include "display.h"
->>>>>>> 3bae669 (commit to merge with master)
->>>>>>> 067e75a (commit to merge with master)
-=======
-#include "display.h"
->>>>>>> 2d13fca (new display driver)
 
 /*
  * Register values.
@@ -110,96 +36,11 @@ struct rpisense {
 
 	/* Client devices */
 	struct rpisense_js joystick;
-<<<<<<< HEAD
-<<<<<<< HEAD
-	struct rpisense_cd char_dev;
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-	struct rpisense_fb framebuffer;
-=======
-	struct rpisense_cd char_dev;
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-=======
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-	struct rpisense_cd char_dev;
-=======
-	struct rpisense_fb framebuffer;
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ed899c1 (framebuffer testfile)
-=======
-=======
-=======
-	struct rpisense_cd char_dev;
->>>>>>> 86a0552 (new char driver)
-<<<<<<< HEAD
->>>>>>> a8e899b (new char driver)
-<<<<<<< HEAD
->>>>>>> a750644 (new char driver)
-=======
-=======
-=======
 	struct rpisense_disp display;
->>>>>>> 107da44 (accessing plaltform device through misdevice.parent)
->>>>>>> 2615cec (accessing plaltform device through misdevice.parent)
-<<<<<<< HEAD
->>>>>>> c5aa68f (accessing plaltform device through misdevice.parent)
-=======
-=======
-	struct rpisense_disp display;
->>>>>>> 3bae669 (commit to merge with master)
->>>>>>> 067e75a (commit to merge with master)
-=======
-	struct rpisense_disp display;
->>>>>>> 2d13fca (new display driver)
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
 int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
-<<<<<<< HEAD
-<<<<<<< HEAD
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-=======
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
-=======
->>>>>>> b54532f (framebuffer testfile)
->>>>>>> ea10db8 (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ed899c1 (framebuffer testfile)
-=======
-=======
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
-=======
->>>>>>> b54532f (framebuffer testfile)
-=======
-int rpisense_block_read(struct rpisense *rpisense, char *buf, int count);
->>>>>>> 1d43e44 (rpisense-cd.c with read functionality)
->>>>>>> 421ef24 (rpisense-cd.c with read functionality)
-<<<<<<< HEAD
->>>>>>> f4c8cfc (rpisense-cd.c with read functionality)
-=======
-=======
->>>>>>> 3bae669 (commit to merge with master)
->>>>>>> 067e75a (commit to merge with master)
-=======
->>>>>>> 2d13fca (new display driver)
 
 #endif

@@ -15,95 +15,11 @@
 
 #include <linux/module.h>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include "joystick.h"
 #include "core.h"
-=======
-=======
->>>>>>> ed899c1 (framebuffer testfile)
-=======
->>>>>>> a750644 (new char driver)
-=======
->>>>>>> 067e75a (commit to merge with master)
-=======
->>>>>>> ab5a08d (new display driver)
-=======
->>>>>>> 287233f (new display driver)
-<<<<<<< HEAD
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/core.h>
-=======
-=======
->>>>>>> ea10db8 (framebuffer testfile)
-=======
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 3bae669 (commit to merge with master)
-=======
->>>>>>> 7c4b617 (new display driver)
-/*
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/core.h>
-*/
-
-=======
->>>>>>> bfd00fb (new display driver)
-=======
->>>>>>> f61cc5a (new display driver)
-#include "joystick.h"
-#include "core.h"
-
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 6a892bc (rpisense-cd.c with read functionality)
-<<<<<<< HEAD
->>>>>>> 639469e (rpisense-cd.c with read functionality)
-=======
-=======
-=======
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/core.h>
->>>>>>> b54532f (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ea10db8 (framebuffer testfile)
-<<<<<<< HEAD
->>>>>>> ed899c1 (framebuffer testfile)
-=======
-=======
-=======
-/*
-#include <linux/mfd/rpisense/joystick.h>
-#include <linux/mfd/rpisense/core.h>
-*/
-
-#include "joystick.h"
-#include "core.h"
-
->>>>>>> 86a0552 (new char driver)
->>>>>>> a8e899b (new char driver)
->>>>>>> a750644 (new char driver)
-
-<<<<<<< HEAD
-static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
-=======
-=======
->>>>>>> 3bae669 (commit to merge with master)
-=======
-#include "joystick.h"
-#include "core.h"
-
->>>>>>> 2d13fca (new display driver)
-static struct rpisense *rpisense;
 static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
->>>>>>> 067e75a (commit to merge with master)
 
-static irqreturn_t keys_work_fn(int, void *cookie)
+static irqreturn_t keys_work_fn(int n, void *cookie)
 {
 	int i;
 	static s32 prev_keys;

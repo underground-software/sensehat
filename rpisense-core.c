@@ -20,54 +20,10 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-#include "core.h"
-#include <linux/slab.h>
-
-=======
-=======
->>>>>>> ed899c1 (framebuffer testfile)
-=======
->>>>>>> a750644 (new char driver)
-=======
->>>>>>> 067e75a (commit to merge with master)
-=======
->>>>>>> ab5a08d (new display driver)
-=======
->>>>>>> 287233f (new display driver)
-<<<<<<< HEAD
-#include <linux/mfd/rpisense/core.h>
-#include <linux/slab.h>
-
-=======
-=======
->>>>>>> ea10db8 (framebuffer testfile)
-=======
->>>>>>> a8e899b (new char driver)
-=======
->>>>>>> 3bae669 (commit to merge with master)
-=======
->>>>>>> 7c4b617 (new display driver)
-//#include <linux/mfd/rpisense/core.h>
-=======
->>>>>>> bfd00fb (new display driver)
-=======
->>>>>>> f61cc5a (new display driver)
-=======
->>>>>>> 2d13fca (new display driver)
 #include <linux/slab.h>
 
 #include "core.h"
 
-static struct rpisense *rpisense;
-
->>>>>>> 639469e (rpisense-cd.c with read functionality)
 static void rpisense_client_dev_register(struct rpisense *rpisense,
 					 const char *name,
 					 struct platform_device **pdev)
