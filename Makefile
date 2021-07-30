@@ -1,6 +1,6 @@
 obj-m += rpisense-core.o rpisense-js.o rpisense-fb.o
 
-.PHONY: build clean load
+.PHONY: build clean load unload
 
 build:
 	make -C /lib/modules/$(shell uname -r)/build modules M=$(PWD)
@@ -16,3 +16,5 @@ load:
 	sudo insmod rpisense-core.ko
 	sudo insmod rpisense-js.ko
 	sudo insmod rpisense-fb.ko
+unload:
+	sudo rmmod rpisense_js rpisense_fb rpisense_core
