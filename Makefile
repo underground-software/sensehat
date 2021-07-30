@@ -8,7 +8,7 @@ build:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build clean M=$(PWD)
 
-load: build
+load:
 	sudo modprobe sysimgblt
 	sudo modprobe sysfillrect
 	sudo modprobe syscopyarea
