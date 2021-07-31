@@ -124,22 +124,31 @@ static int rpisense_remove(struct i2c_client *i2c)
 	// 
 	platform_device_unregister(rpisense->joystick.pdev);
 	
-	// I assume i2c core frees all of the other allocated memory?
+	/* I assume i2c core frees all of the other allocated memory?
+	 * no need to:
+	 * -free gpio desc?
+	 */
 	return 0;
 }
 
 struct rpisense *rpisense_get_dev(void)
 {
+	// duh? this is something we definitely refactor
 	return rpisense;
 }
+// I guess this just exports access to our static struct? why?
 EXPORT_SYMBOL_GPL(rpisense_get_dev);
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 {
+	// api call, makes sense, uses smbus
 	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, reg);
 
 	if (ret < 0)
 		dev_err(rpisense->dev, "Read from reg %d failed\n", reg);
+	
+	// would be good to have more of a hardware spec you know?
+	// https://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html
 	/* Due to the BCM270x I2C clock stretching bug, some values
 	 * may have MSB set. Clear it to avoid incorrect values.
 	 * */
@@ -149,6 +158,7 @@ EXPORT_SYMBOL_GPL(rpisense_reg_read);
 
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 {
+	// this one is pure i2c I see
 	int ret = i2c_master_send(rpisense->i2c_client, buf, count);
 
 	if (ret < 0)
@@ -157,21 +167,26 @@ int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 }
 EXPORT_SYMBOL_GPL(rpisense_block_write);
 
+// our private data is "0" apparently	
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },
 	{ }
 };
 MODULE_DEVICE_TABLE(i2c, rpisense_i2c_id);
 
+// info for deivice tree
+// not necessary to fill out name, type, or data?
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_core_id[] = {
 	{ .compatible = "rpi,rpi-sense" },
 	{ },
 };
+// create alias, parsed by file2alias.c (handle_moddevtable())
 MODULE_DEVICE_TABLE(of, rpisense_core_id);
 #endif
 
 
+// pretty barebones I think
 static struct i2c_driver rpisense_driver = {
 	.driver = {
 		   .name = "rpi-sense",
@@ -182,8 +197,11 @@ static struct i2c_driver rpisense_driver = {
 	.id_table = rpisense_i2c_id,
 };
 
+// shortcut for creating barebones module_{init,exit} functions
+// that do nothing but {,un}register with i2c_{add,del}_driver
 module_i2c_driver(rpisense_driver);
 
+// nice guy, he let us rewrite his driver
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT core driver");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");

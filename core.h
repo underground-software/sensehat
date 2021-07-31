@@ -16,12 +16,14 @@
 #ifndef __LINUX_MFD_RPISENSE_CORE_H_
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
+// strange locations -- condense
 #include <linux/mfd/rpisense/joystick.h>
 #include <linux/mfd/rpisense/framebuffer.h>
 
 /*
  * Register values.
  */
+// Where are thsese from?!?!?!
 #define RPISENSE_FB			0x00
 #define RPISENSE_WAI			0xF0
 #define RPISENSE_VER			0xF1
@@ -30,6 +32,15 @@
 
 #define RPISENSE_ID			's'
 
+/* other info from https://pinout.xyz/pinout/sense_hat
+0x5c: lps25h
+0x1c: lsm9ds1
+0x5f: hts221
+0x46: led2472g
+0x6a: lsm9ds1
+*/
+
+// this all makes plenty of sense
 struct rpisense {
 	struct device *dev;
 	struct i2c_client *i2c_client;
