@@ -30,7 +30,9 @@ static void rpisense_client_dev_register(struct rpisense *rpisense,
 					 struct platform_device **pdev)
 {
 	int ret;
+	// double ptr thing is clunky imo
 
+	// legacy interface! not hotpluggable
 	*pdev = platform_device_alloc(name, -1);
 	if (*pdev == NULL) {
 		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
@@ -38,12 +40,16 @@ static void rpisense_client_dev_register(struct rpisense *rpisense,
 	}
 
 	(*pdev)->dev.parent = rpisense->dev;
+	// rpisense wil be private data for client platform device
 	platform_set_drvdata(*pdev, rpisense);
+	// called since we use _alloc
 	ret = platform_device_add(*pdev);
 	if (ret != 0) {
 		dev_err(rpisense->dev, "Failed to register %s: %d\n",
 			name, ret);
+		// delete it
 		platform_device_put(*pdev);
+		// good idea
 		*pdev = NULL;
 	}
 }
@@ -100,6 +106,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	if (IS_ERR(rpisense_js->keys_desc)) {
 		dev_warn(&i2c->dev, "Failed to get keys-int descriptor.\n");
 		// Try to use old integer interface
+		// FIXME: remove, this is device dependent
 		rpisense_js->keys_desc = gpio_to_desc(23);
 		// if that fails too, we are screwed
 		if (rpisense_js->keys_desc == NULL) {
@@ -121,8 +128,10 @@ static int rpisense_remove(struct i2c_client *i2c)
 {
 	struct rpisense *rpisense = i2c_get_clientdata(i2c);
 
-	// 
+	//  delete and free joystick platform device
 	platform_device_unregister(rpisense->joystick.pdev);
+
+	// why not free fb device???
 	
 	/* I assume i2c core frees all of the other allocated memory?
 	 * no need to:

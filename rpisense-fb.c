@@ -29,6 +29,7 @@
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
+// this could be improved tbh, just need to research how gamma works
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
 static struct rpisense *rpisense;
