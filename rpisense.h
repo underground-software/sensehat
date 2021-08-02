@@ -44,6 +44,7 @@ struct rpisense_js {
 	struct platform_device *pdev;
 	struct input_dev *keys_dev;
 	struct gpio_desc *keys_desc;
+	struct work_struct keys_work_s;
 	int keys_irq;
 };
 

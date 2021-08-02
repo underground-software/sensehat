@@ -19,7 +19,7 @@
 #include "core.h"
 static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
-static irqreturn_t rpisense_js_report(int n, void *cookie)
+static irqreturn_t keys_work_fn(int n, void *cookie)
 {
 	int i;
 	static s32 prev_keys;
@@ -55,6 +55,7 @@ static int rpisense_js_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
+	rpisense_js->keys_dev->evbit[0] = BIT_MASK(EV_KEY);
 	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
 		set_bit(keymap[i],
 			rpisense_js->keys_dev->keybit);
@@ -88,7 +89,7 @@ static int rpisense_js_probe(struct platform_device *pdev)
 	}
 
 	ret = devm_request_threaded_irq(&pdev->dev, rpisense_js->keys_irq,
-		NULL, rpisense_js_report, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+		NULL, keys_work_fn, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
 		"keys", &pdev->dev);
 
 	if (ret) {
@@ -102,7 +103,6 @@ err_keys_alloc:
 	input_free_device(rpisense_js->keys_dev);
 	return ret;
 }
-
 
 static int rpisense_js_remove(struct platform_device *pdev)
 {
