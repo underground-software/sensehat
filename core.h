@@ -17,7 +17,7 @@
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
 #include "joystick.h"
-#include "display.h"
+#include "framebuffer.h"
 
 /*
  * Register values.
@@ -36,7 +36,7 @@ struct rpisense {
 
 	/* Client devices */
 	struct rpisense_js joystick;
-	struct rpisense_disp display;
+	struct rpisense_fb framebuffer;
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);

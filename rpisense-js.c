@@ -17,9 +17,10 @@
 
 #include "joystick.h"
 #include "core.h"
-static unsigned char keymap[5] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
-static irqreturn_t keys_work_fn(int n, void *cookie)
+static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
+
+static irqreturn_t keys_work_fn(int, void *cookie)
 {
 	int i;
 	static s32 prev_keys;
