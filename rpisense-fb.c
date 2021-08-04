@@ -23,8 +23,8 @@
 #include <linux/delay.h>
 #include <linux/fb.h>
 #include <linux/init.h>
+#include <linux/platform_device.h>
 
-#include "framebuffer.h"
 #include "core.h"
 
 static bool lowlight;

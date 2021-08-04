@@ -16,8 +16,12 @@
 #ifndef __LINUX_MFD_RPISENSE_CORE_H_
 #define __LINUX_MFD_RPISENSE_CORE_H_
 
-#include "joystick.h"
-#include "framebuffer.h"
+#define SENSEFB_FBIO_IOC_MAGIC 0xF1
+
+#define SENSEFB_FBIOGET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 0)
+#define SENSEFB_FBIOSET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 1)
+#define SENSEFB_FBIORESET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 2)
+
 
 /*
  * Register values.
@@ -35,8 +39,16 @@ struct rpisense {
 	struct i2c_client *i2c_client;
 
 	/* Client devices */
-	struct rpisense_js joystick;
-	struct rpisense_fb framebuffer;
+	struct rpisense_js {
+		struct platform_device *pdev;
+		struct input_dev *keys_dev;
+		struct gpio_desc *keys_desc;
+		int keys_irq;
+	} joystick;
+	struct rpisense_fb {
+		struct platform_device *pdev;
+		struct fb_info *info;
+	} framebuffer;
 };
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg);

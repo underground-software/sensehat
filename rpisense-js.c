@@ -14,8 +14,11 @@
  */
 
 #include <linux/module.h>
+#include <linux/input.h>
+#include <linux/interrupt.h>
+#include <linux/gpio/consumer.h>
+#include <linux/platform_device.h>
 
-#include "joystick.h"
 #include "core.h"
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
