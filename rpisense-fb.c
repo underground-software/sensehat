@@ -196,7 +196,7 @@ static int rpisense_fb_probe(struct platform_device *pdev)
 	struct fb_info *info;
 	int ret = -ENOMEM;
 
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 
 	rpisense_fb_param.vmem = vzalloc(rpisense_fb_param.vmemsize);

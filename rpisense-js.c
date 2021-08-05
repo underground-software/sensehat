@@ -47,7 +47,7 @@ static int rpisense_js_probe(struct platform_device *pdev)
 {
 	int ret;
 	int i;
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 
 	rpisense_js->keys_dev = devm_input_allocate_device(&pdev->dev);
