@@ -1,5 +1,5 @@
 LDLIBS = -lncurses
-EXES = framebuffer_test
+EXES = framebuffer_test color_test
 
 .PHONY: all clean
 
