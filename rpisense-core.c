@@ -75,6 +75,7 @@ static int rpisense_remove(struct i2c_client *i2c)
 	struct rpisense *rpisense = i2c_get_clientdata(i2c);
 
 	platform_device_unregister(rpisense->joystick.pdev);
+	platform_device_unregister(rpisense->framebuffer.pdev);
 	return 0;
 }
 
