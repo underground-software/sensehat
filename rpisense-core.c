@@ -25,26 +25,7 @@
 
 static void rpisense_client_dev_register(struct rpisense *rpisense,
 					 const char *name,
-					 struct platform_device **pdev)
-{
-	int ret;
-
-	*pdev = platform_device_alloc(name, -1);
-	if (*pdev == NULL) {
-		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
-		return;
-	}
-
-	(*pdev)->dev.parent = rpisense->dev;
-	platform_set_drvdata(*pdev, rpisense);
-	ret = platform_device_add(*pdev);
-	if (ret != 0) {
-		dev_err(rpisense->dev, "Failed to register %s: %d\n",
-			name, ret);
-		platform_device_put(*pdev);
-		*pdev = NULL;
-	}
-}
+					 struct platform_device **pdev);
 
 static int rpisense_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
@@ -97,6 +78,28 @@ static int rpisense_remove(struct i2c_client *i2c)
 	return 0;
 }
 
+static void rpisense_client_dev_register(struct rpisense *rpisense,
+					 const char *name,
+					 struct platform_device **pdev)
+{
+	int ret;
+
+	*pdev = platform_device_alloc(name, -1);
+	if (*pdev == NULL) {
+		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
+		return;
+	}
+
+	(*pdev)->dev.parent = rpisense->dev;
+	platform_set_drvdata(*pdev, rpisense);
+	ret = platform_device_add(*pdev);
+	if (ret != 0) {
+		dev_err(rpisense->dev, "Failed to register %s: %d\n",
+			name, ret);
+		platform_device_put(*pdev);
+		*pdev = NULL;
+	}
+}
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
 {
