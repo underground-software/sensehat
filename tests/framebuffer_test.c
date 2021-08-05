@@ -27,31 +27,43 @@ typedef struct
 }
 Point;
 
+void update_screen(int fd, void *data, size_t size)
+{
+	if(0 > write(fd, data, size))
+		err(1, "unable to write to fb");
+	if(0 > lseek(fd, 0, SEEK_SET))
+		err(1, "unable to seek fb");
+}
+
 int main(int argc, char **argv)
 {
-	//pointer to 8x8 array of Colors that will hold the memory mapped frame buffer
-	Color (*fb)[8][8]=NULL;
+	//8x8 array of Colors for holding state of frame buffer
+	Color fb[8][8];
+
+	int fd;
 
 	//setup / argc processing code that sets up memory mapping
 	{
-		char *filename = "/dev/fb1";
+		char *filename;
 
-		if(2 <= argc)
+		switch(argc)
+		{
+		case 1:
+			filename = "/dev/sense-hat";
+			break;
+		case 2:
 			filename = argv[1];
-
-		int fd = open(filename, O_RDWR);
-		if(-1 == fd)
+			break;
+		default:
+			errx(1, "invalid arguments");
+		}
+		if(0 > (fd = open(filename, O_RDWR)))
 			err(1, "unable to open %s for writing", filename);
-
-		fb = mmap(NULL, sizeof *fb, PROT_READ | PROT_WRITE, MAP_SHARED_VALIDATE, fd, 0);
-		if((void *)-1 == fb)
-			err(1, "unable to mmap file %s", filename);
-
-		close(fd);
 	}
 
 	//clear screen
-	memset(*fb,0,sizeof *fb);
+	memset(*fb, 0, sizeof fb);
+	update_screen(fd, fb, sizeof fb);
 
 	//ncurses setup
 	initscr();
@@ -65,7 +77,8 @@ int main(int argc, char **argv)
 	for(_Bool running = 1;running;)
 	{
 		//set current location to random color
-		(*fb)[loc.y][loc.x]=(Color){(uint16_t)rand()};
+		fb[loc.y][loc.x]=(Color){(uint16_t)rand()};
+		update_screen(fd, fb, sizeof fb);
 
 		Point newloc = loc;
 		switch(getch())
@@ -88,13 +101,15 @@ int main(int argc, char **argv)
 		}
 
 		//clear old location
-		(*fb)[loc.y][loc.x]=(Color){0};
+		fb[loc.y][loc.x]=(Color){0};
 
 		//update locatation
 		loc = newloc;
+
+		update_screen(fd, fb, sizeof fb);
 	}
 
 	endwin();
-	munmap(fb, sizeof *fb);
+	close(fd);
 	return 0;
 }
