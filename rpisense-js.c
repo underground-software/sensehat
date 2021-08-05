@@ -26,21 +26,18 @@ static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEF
 static irqreturn_t rpisense_js_report(int n, void *cookie)
 {
 	int i;
-	static s32 prev_keys;
-	struct device *dev = cookie;
-	struct rpisense *rpisense = dev_get_drvdata(dev->parent);
+	static s32 prev_keys = 0;
+	struct rpisense *rpisense = cookie;
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 	s32 keys = rpisense_reg_read(rpisense, RPISENSE_KEYS);
 	s32 changes = keys ^ prev_keys;
 
 	prev_keys = keys;
-	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
-		if (changes & 1) {
+	for (i = 0; i < ARRAY_SIZE(keymap); ++i) {
+		if (changes & (1<<i)) {
 			input_report_key(rpisense_js->keys_dev,
-					 keymap[i], keys & 1);
+					 keymap[i], keys & (1<<i));
 		}
-		changes >>= 1;
-		keys >>= 1;
 	}
 	input_sync(rpisense_js->keys_dev);
 	return IRQ_HANDLED;
@@ -92,7 +89,7 @@ static int rpisense_js_probe(struct platform_device *pdev)
 
 	ret = devm_request_threaded_irq(&pdev->dev, rpisense_js->keys_irq,
 		NULL, rpisense_js_report, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-		"keys", &pdev->dev);
+		"keys", rpisense);
 
 	if (ret) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
