@@ -53,8 +53,8 @@ static int rpisense_js_probe(struct platform_device *pdev)
 	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 
-	rpisense_js->keys_dev = input_allocate_device();
-	if (!rpisense_js->keys_dev) {
+	rpisense_js->keys_dev = devm_input_allocate_device(&pdev->dev);
+	if (rpisense_js->keys_dev == NULL) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
 		return -ENOMEM;
 	}
@@ -75,20 +75,19 @@ static int rpisense_js_probe(struct platform_device *pdev)
 	ret = input_register_device(rpisense_js->keys_dev);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register input device.\n");
-		goto err_keys_alloc;
+		return ret;
 	}
 
 	ret = gpiod_direction_input(rpisense_js->keys_desc);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not set keys-int direction.\n");
-		goto err_keys_reg;
+		return ret;
 	}
 
 	rpisense_js->keys_irq = gpiod_to_irq(rpisense_js->keys_desc);
 	if (rpisense_js->keys_irq < 0) {
 		dev_err(&pdev->dev, "Could not determine keys-int IRQ.\n");
-		ret = rpisense_js->keys_irq;
-		goto err_keys_reg;
+		return rpisense_js->keys_irq;
 	}
 
 	ret = devm_request_threaded_irq(&pdev->dev, rpisense_js->keys_irq,
@@ -97,24 +96,8 @@ static int rpisense_js_probe(struct platform_device *pdev)
 
 	if (ret) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
-		goto err_keys_reg;
+		return ret;
 	}
-	return 0;
-err_keys_reg:
-	input_unregister_device(rpisense_js->keys_dev);
-err_keys_alloc:
-	input_free_device(rpisense_js->keys_dev);
-	return ret;
-}
-
-
-static int rpisense_js_remove(struct platform_device *pdev)
-{
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
-	struct rpisense_js *rpisense_js = &rpisense->joystick;
-
-	input_unregister_device(rpisense_js->keys_dev);
-	input_free_device(rpisense_js->keys_dev);
 	return 0;
 }
 
@@ -134,7 +117,6 @@ MODULE_DEVICE_TABLE(platform, rpisense_js_device_id);
 
 static struct platform_driver rpisense_js_driver = {
 	.probe = rpisense_js_probe,
-	.remove = rpisense_js_remove,
 	.driver = {
 		.name = "rpi-sense-js",
 	},
