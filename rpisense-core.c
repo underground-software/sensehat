@@ -55,9 +55,19 @@ static int rpisense_probe(struct i2c_client *i2c,
 
 	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
 							       "rpi-sense-js");
+
+	if(IS_ERR(rpisense->joystick.pdev)) {
+		dev_err(rpisense->dev, "failed to register rpisense-js");
+		return PTR_ERR(rpisense->joystick.pdev);
+	}
+
 	rpisense->framebuffer.pdev = rpisense_client_dev_register(rpisense,
 								  "rpi-sense-fb");
 
+	if(IS_ERR(rpisense->framebuffer.pdev)) {
+		dev_err(rpisense->dev, "failed to register rpisense-fb");
+		return PTR_ERR(rpisense->framebuffer.pdev);
+	}
 
 	return 0;
 }
