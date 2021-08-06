@@ -22,18 +22,6 @@
 #define SENSEFB_FBIOSET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 1)
 #define SENSEFB_FBIORESET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 2)
 
-
-/*
- * Register values.
- */
-#define RPISENSE_FB			0x00
-#define RPISENSE_WAI			0xF0
-#define RPISENSE_VER			0xF1
-#define RPISENSE_KEYS			0xF2
-#define RPISENSE_EE_WP			0xF3
-
-#define RPISENSE_ID			's'
-
 struct rpisense {
 	struct device *dev;
 	struct i2c_client *i2c_client;
@@ -51,8 +39,7 @@ struct rpisense {
 	} framebuffer;
 };
 
-s32 rpisense_reg_read(struct rpisense *rpisense, int reg);
-int rpisense_reg_write(struct rpisense *rpisense, int reg, u16 val);
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
+int rpisense_get_joystick_state(struct rpisense *rpisense);
 
 #endif

@@ -30,7 +30,7 @@ static irqreturn_t rpisense_js_report(int n, void *cookie)
 	static s32 prev_keys = 0;
 	struct rpisense *rpisense = cookie;
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
-	s32 keys = rpisense_reg_read(rpisense, RPISENSE_KEYS);
+	s32 keys = rpisense_get_joystick_state(rpisense);
 	s32 changes = keys ^ prev_keys;
 
 	prev_keys = keys;

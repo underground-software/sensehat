@@ -23,6 +23,14 @@
 #include "rpisense.h"
 #include <linux/slab.h>
 
+#define RPISENSE_FB			0x00
+#define RPISENSE_WAI			0xF0
+#define RPISENSE_VER			0xF1
+#define RPISENSE_KEYS			0xF2
+#define RPISENSE_EE_WP			0xF3
+
+#define RPISENSE_ID			's'
+
 static struct platform_device *
 rpisense_client_dev_register(struct rpisense *rpisense, const char *name);
 
@@ -39,14 +47,15 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense->dev = &i2c->dev;
 	rpisense->i2c_client = i2c;
 
-	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
-	if (ret > 0) {
-		if (ret != RPISENSE_ID)
-			return -EINVAL;
-	} else {
+
+	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_WAI);
+	if (ret < 0)
 		return ret;
-	}
-	ret = rpisense_reg_read(rpisense, RPISENSE_VER);
+
+	if (ret != RPISENSE_ID)
+			return -EINVAL;
+
+	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_VER);
 	if (ret < 0)
 		return ret;
 
@@ -100,18 +109,13 @@ alloc_fail:
 	return ERR_PTR(ret);
 }
 
-s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
+int rpisense_get_joystick_state(struct rpisense *rpisense)
 {
-	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, reg);
+	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_KEYS);
 
-	if (ret < 0)
-		dev_err(rpisense->dev, "Read from reg %d failed\n", reg);
-	/* Due to the BCM283x I2C clock stretching bug, some values
-	 * may have MSB set. Clear it to avoid incorrect values.
-	 * */
-	return ret & 0x7F;
+	return ret < 0 ? ret : ret & 0x1f;
 }
-EXPORT_SYMBOL_GPL(rpisense_reg_read);
+EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 {
