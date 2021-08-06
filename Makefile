@@ -17,4 +17,4 @@ load:
 	sudo insmod rpisense-js.ko
 	sudo insmod rpisense-fb.ko
 unload:
-	sudo rmmod rpisense_js rpisense_fb rpisense_core
+	-sudo rmmod rpisense_js rpisense_fb rpisense_core
