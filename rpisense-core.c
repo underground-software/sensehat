@@ -3,15 +3,18 @@
  * http://raspberrypi.org
  *
  * Copyright (C) 2015 Raspberry Pi
+ * Copyright (C) 2021 Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
- * Author: Serge Schneider
+ * Original Author: Serge Schneider
+ * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
  *  This program is free software; you can redistribute  it and/or modify it
  *  under  the terms of  the GNU General  Public License as published by the
  *  Free Software Foundation;  either version 2 of the  License, or (at your
  *  option) any later version.
  *
- *  This driver is based on wm8350 implementation.
+ *  This driver is based on wm8350 implementation and was refactored to use the
+ *  misc device subsystem rather than the deprecated framebuffer subsystem.
  */
 
 #include <linux/module.h>
@@ -23,7 +26,7 @@
 #include "rpisense.h"
 #include <linux/slab.h>
 
-#define RPISENSE_FB			0x00
+#define RPISENSE_DISPLAY		0x00
 #define RPISENSE_WAI			0xF0
 #define RPISENSE_VER			0xF1
 #define RPISENSE_KEYS			0xF2
@@ -70,12 +73,12 @@ static int rpisense_probe(struct i2c_client *i2c,
 		return PTR_ERR(rpisense->joystick.pdev);
 	}
 
-	rpisense->framebuffer.pdev = rpisense_client_dev_register(rpisense,
+	rpisense->display.pdev = rpisense_client_dev_register(rpisense,
 								  "rpi-sense-fb");
 
-	if(IS_ERR(rpisense->framebuffer.pdev)) {
+	if(IS_ERR(rpisense->display.pdev)) {
 		dev_err(rpisense->dev, "failed to register rpisense-fb");
-		return PTR_ERR(rpisense->framebuffer.pdev);
+		return PTR_ERR(rpisense->display.pdev);
 	}
 
 	return 0;
@@ -117,27 +120,27 @@ int rpisense_get_joystick_state(struct rpisense *rpisense)
 }
 EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 
-int rpisense_update_framebuffer(struct rpisense *rpisense)
+int rpisense_update_display(struct rpisense *rpisense)
 {
 	int i,j,ret;
-	struct rpisense_fb *fb = &rpisense->framebuffer;
+	struct rpisense_display *display = &rpisense->display;
 	struct {u8 reg, pixel_data[8][3][8];} msg;
 
-	msg.reg = RPISENSE_FB;
+	msg.reg = RPISENSE_DISPLAY;
 	for (i = 0; i < 8; ++i) {
 		for (j = 0; j < 8; ++j) {
-			msg.pixel_data[i][0][j] = fb->gamma[fb->vmem[i][j].r];
-			msg.pixel_data[i][1][j] = fb->gamma[fb->vmem[i][j].g];
-			msg.pixel_data[i][2][j] = fb->gamma[fb->vmem[i][j].b];
+			msg.pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
+			msg.pixel_data[i][1][j] = display->gamma[display->vmem[i][j].g];
+			msg.pixel_data[i][2][j] = display->gamma[display->vmem[i][j].b];
 		}
 	}
 
 	ret = i2c_master_send(rpisense->i2c_client, (u8 *)&msg, sizeof msg);
 	if (ret < 0)
-		dev_err(rpisense->dev, "Update framebuffer failed");
+		dev_err(rpisense->dev, "Update to 8x8 LED matrix display failed");
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rpisense_update_framebuffer);
+EXPORT_SYMBOL_GPL(rpisense_update_display);
 
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },

@@ -3,25 +3,26 @@
  * http://raspberrypi.org
  *
  * Copyright (C) 2015 Raspberry Pi
+ * Copyright (C) 2021 Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
- * Author: Serge Schneider
+ * Original Author: Serge Schneider
+ * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
  *  This program is free software; you can redistribute  it and/or modify it
  *  under  the terms of  the GNU General  Public License as published by the
  *  Free Software Foundation;  either version 2 of the  License, or (at your
  *  option) any later version.
- *
  */
 
 #ifndef __LINUX_MFD_RPISENSE_H_
 #define __LINUX_MFD_RPISENSE_H_
 #include <linux/miscdevice.h>
 
-#define SENSEFB_FBIO_IOC_MAGIC 0xF1
+#define SENSEDISP_IOC_MAGIC 0xF1
 
-#define SENSEFB_FBIOGET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 0)
-#define SENSEFB_FBIOSET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 1)
-#define SENSEFB_FBIORESET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 2)
+#define SENSEDISP_IOGET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 0)
+#define SENSEDISP_IOSET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 1)
+#define SENSEDISP_IORESET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 2)
 
 struct rpisense {
 	struct device *dev;
@@ -35,7 +36,7 @@ struct rpisense {
 		int keys_irq;
 	} joystick;
 
-	struct rpisense_fb {
+	struct rpisense_display {
 		struct platform_device *pdev;
 		struct miscdevice mdev;
 		struct mutex rw_mtx;
@@ -43,10 +44,16 @@ struct rpisense {
 		struct {
 			u16 b:5, u:1, g:5, r:5;
 		} vmem[8][8];
-	} framebuffer;
+	} display;
+};
+
+enum gamma_preset {
+	GAMMA_DEFAULT = 0,
+	GAMMA_LOWLIGHT,
+	GAMMA_PRESET_COUNT,
 };
 
 int rpisense_get_joystick_state(struct rpisense *rpisense);
-int rpisense_update_framebuffer(struct rpisense *rpisense);
+int rpisense_update_display(struct rpisense *rpisense);
 
 #endif
