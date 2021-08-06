@@ -21,247 +21,197 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/delay.h>
-#include <linux/fb.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
+#include <linux/mod_devicetable.h>
 
 #include "rpisense.h"
+
+#define GAMMA_SIZE sizeof_field(struct rpisense_fb, gamma)
+#define VMEM_SIZE sizeof_field(struct rpisense_fb, vmem)
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
-struct rpisense_fb_param {
-	char __iomem *vmem;
-	u8 *vmem_work;
-	u32 vmemsize;
-	u8 *gamma;
+static const u8 gamma_presets[][GAMMA_SIZE] =
+{
+	/* default gamma */
+	{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
+		0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0E, 0x0F, 0x11,
+		0x12, 0x14, 0x15, 0x17, 0x19, 0x1B, 0x1D, 0x1F,
+	},
+	/* lowlight gamma */
+	{
+		0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+		0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02,
+		0x03, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06,
+		0x06, 0x07, 0x07, 0x08, 0x08, 0x09, 0x0A, 0x0A,
+	},
 };
 
-static u8 gamma_default[32] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
-			       0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07,
-			       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0E, 0x0F, 0x11,
-			       0x12, 0x14, 0x15, 0x17, 0x19, 0x1B, 0x1D, 0x1F,};
-
-static u8 gamma_low[32] = {0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-			   0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02,
-			   0x03, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06,
-			   0x06, 0x07, 0x07, 0x08, 0x08, 0x09, 0x0A, 0x0A,};
-
-static u8 gamma_user[32];
-
-static u32 pseudo_palette[16];
-
-static struct rpisense_fb_param rpisense_fb_param = {
-	.vmem = NULL,
-	.vmemsize = 128,
-	.gamma = gamma_default,
-};
-
-static struct fb_deferred_io rpisense_fb_defio;
-
-static struct fb_fix_screeninfo rpisense_fb_fix = {
-	.id =		"RPi-Sense FB",
-	.type =		FB_TYPE_PACKED_PIXELS,
-	.visual =	FB_VISUAL_TRUECOLOR,
-	.xpanstep =	0,
-	.ypanstep =	0,
-	.ywrapstep =	0,
-	.accel =	FB_ACCEL_NONE,
-	.line_length =	16,
-};
-
-static struct fb_var_screeninfo rpisense_fb_var = {
-	.xres		= 8,
-	.yres		= 8,
-	.xres_virtual	= 8,
-	.yres_virtual	= 8,
-	.bits_per_pixel = 16,
-	.red		= {11, 5, 0},
-	.green		= {5, 6, 0},
-	.blue		= {0, 5, 0},
-};
-
-static ssize_t rpisense_fb_write(struct fb_info *info,
-				 const char __user *buf, size_t count,
-				 loff_t *ppos)
-{
-	ssize_t res = fb_sys_write(info, buf, count, ppos);
-
-	schedule_delayed_work(&info->deferred_work, rpisense_fb_defio.delay);
-	return res;
-}
-
-static void rpisense_fb_fillrect(struct fb_info *info,
-				 const struct fb_fillrect *rect)
-{
-	sys_fillrect(info, rect);
-	schedule_delayed_work(&info->deferred_work, rpisense_fb_defio.delay);
-}
-
-static void rpisense_fb_copyarea(struct fb_info *info,
-				 const struct fb_copyarea *area)
-{
-	sys_copyarea(info, area);
-	schedule_delayed_work(&info->deferred_work, rpisense_fb_defio.delay);
-}
-
-static void rpisense_fb_imageblit(struct fb_info *info,
-				  const struct fb_image *image)
-{
-	sys_imageblit(info, image);
-	schedule_delayed_work(&info->deferred_work, rpisense_fb_defio.delay);
-}
-
-static void rpisense_fb_deferred_io(struct fb_info *info,
-				struct list_head *pagelist)
-{
-	struct rpisense *rpisense = dev_get_drvdata(info->device->parent);
-	int i;
-	int j;
-	u8 *vmem_work = rpisense_fb_param.vmem_work;
-	u16 *mem = (u16 *)rpisense_fb_param.vmem;
-	u8 *gamma = rpisense_fb_param.gamma;
-
-	vmem_work[0] = 0;
-	for (j = 0; j < 8; j++) {
-		for (i = 0; i < 8; i++) {
-			vmem_work[(j * 24) + i + 1] =
-				gamma[(mem[(j * 8) + i] >> 11) & 0x1F];
-			vmem_work[(j * 24) + (i + 8) + 1] =
-				gamma[(mem[(j * 8) + i] >> 6) & 0x1F];
-			vmem_work[(j * 24) + (i + 16) + 1] =
-				gamma[(mem[(j * 8) + i]) & 0x1F];
-		}
-	}
-	rpisense_block_write(rpisense, vmem_work, 193);
-}
-
-static struct fb_deferred_io rpisense_fb_defio = {
-	.delay		= HZ/100,
-	.deferred_io	= rpisense_fb_deferred_io,
-};
-
-static int rpisense_fb_ioctl(struct fb_info *info, unsigned int cmd,
-			     unsigned long arg)
-{
-	switch (cmd) {
-	case SENSEFB_FBIOGET_GAMMA:
-		if (copy_to_user((void __user *) arg, rpisense_fb_param.gamma,
-				 sizeof(u8[32])))
-			return -EFAULT;
-		return 0;
-	case SENSEFB_FBIOSET_GAMMA:
-		if (copy_from_user(gamma_user, (void __user *)arg,
-				   sizeof(u8[32])))
-			return -EFAULT;
-		rpisense_fb_param.gamma = gamma_user;
-		schedule_delayed_work(&info->deferred_work,
-				      rpisense_fb_defio.delay);
-		return 0;
-	case SENSEFB_FBIORESET_GAMMA:
-		switch (arg) {
-		case 0:
-			rpisense_fb_param.gamma = gamma_default;
-			break;
-		case 1:
-			rpisense_fb_param.gamma = gamma_low;
-			break;
-		case 2:
-			rpisense_fb_param.gamma = gamma_user;
-			break;
-		default:
-			return -EINVAL;
-		}
-		schedule_delayed_work(&info->deferred_work,
-				      rpisense_fb_defio.delay);
-		break;
-	default:
-		return -EINVAL;
-	}
-	return 0;
-}
-
-static struct fb_ops rpisense_fb_ops = {
-	.fb_read	= fb_sys_read,
-	.fb_write	= rpisense_fb_write,
-	.fb_fillrect	= rpisense_fb_fillrect,
-	.fb_copyarea	= rpisense_fb_copyarea,
-	.fb_imageblit	= rpisense_fb_imageblit,
-	.fb_ioctl	= rpisense_fb_ioctl,
-};
+static struct file_operations rpisense_fb_fops;
 
 static int rpisense_fb_probe(struct platform_device *pdev)
 {
-	struct fb_info *info;
-	int ret = -ENOMEM;
+	int ret;
 
 	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 
-	rpisense_fb_param.vmem = vzalloc(rpisense_fb_param.vmemsize);
-	if (!rpisense_fb_param.vmem)
-		return ret;
+	memcpy(rpisense_fb->gamma, gamma_presets[lowlight], GAMMA_SIZE);
 
-	rpisense_fb_param.vmem_work = devm_kmalloc(&pdev->dev, 193, GFP_KERNEL);
-	if (!rpisense_fb_param.vmem_work)
-		goto err_malloc;
+	memset(rpisense_fb->vmem, 0, VMEM_SIZE);
 
-	info = framebuffer_alloc(0, &pdev->dev);
-	if (!info) {
-		dev_err(&pdev->dev, "Could not allocate framebuffer.\n");
-		goto err_malloc;
-	}
-	rpisense_fb->info = info;
+	mutex_init(&rpisense_fb->rw_mtx);
 
-	rpisense_fb_fix.smem_start = (unsigned long)rpisense_fb_param.vmem;
-	rpisense_fb_fix.smem_len = rpisense_fb_param.vmemsize;
+	rpisense_fb->mdev = (struct miscdevice) {
+		.minor	= MISC_DYNAMIC_MINOR,
+		.name	= "sense-hat",
+		.mode	= 0666,
+		.fops	= &rpisense_fb_fops,
+	};
 
-	info->fbops = &rpisense_fb_ops;
-	info->fix = rpisense_fb_fix;
-	info->var = rpisense_fb_var;
-	info->fbdefio = &rpisense_fb_defio;
-	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_VIRTFB;
-	info->screen_base = rpisense_fb_param.vmem;
-	info->screen_size = rpisense_fb_param.vmemsize;
-	info->pseudo_palette = pseudo_palette;
-
-	if (lowlight)
-		rpisense_fb_param.gamma = gamma_low;
-
-	fb_deferred_io_init(info);
-
-	ret = register_framebuffer(info);
+	ret = misc_register(&rpisense_fb->mdev);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "Could not register framebuffer.\n");
-		goto err_fballoc;
+		return ret;
 	}
 
-	fb_info(info, "%s frame buffer device\n", info->fix.id);
-	schedule_delayed_work(&info->deferred_work, rpisense_fb_defio.delay);
+	dev_info(&pdev->dev, "framebuffer registered with minor number %i", rpisense_fb->mdev.minor);
+
+	rpisense_update_framebuffer(rpisense);
 	return 0;
-err_fballoc:
-	framebuffer_release(info);
-err_malloc:
-	vfree(rpisense_fb_param.vmem);
-	return ret;
 }
 
 static int rpisense_fb_remove(struct platform_device *pdev)
 {
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
-	struct fb_info *info = rpisense_fb->info;
-
-	if (info) {
-		unregister_framebuffer(info);
-		fb_deferred_io_cleanup(info);
-		framebuffer_release(info);
-		vfree(rpisense_fb_param.vmem);
-	}
-
+	misc_deregister(&rpisense_fb->mdev);
 	return 0;
 }
+
+static loff_t rpisense_fb_llseek(struct file *filp, loff_t pos, int whence)
+{
+	loff_t base;
+	switch(whence)
+	{
+	case SEEK_SET:
+		base = 0;
+		break;
+	case SEEK_CUR:
+		base = filp->f_pos;
+		break;
+	case SEEK_END:
+		base = VMEM_SIZE;
+		break;
+	default:
+		return -EINVAL;
+	}
+	base += pos;
+	if(base < 0 || base >= VMEM_SIZE)
+		return -EINVAL;
+	filp->f_pos = base;
+	return base;
+}
+
+static ssize_t rpisense_fb_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
+{
+	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
+	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
+	ssize_t retval = -EFAULT;
+	if(*f_pos >= VMEM_SIZE)
+		return 0;
+	if(*f_pos + count > VMEM_SIZE)
+		count = VMEM_SIZE - *f_pos;
+	if(mutex_lock_interruptible(&rpisense_fb->rw_mtx))
+		return -ERESTARTSYS;
+	if(copy_to_user(buf, rpisense_fb->vmem + *f_pos, count))
+		goto out;
+	*f_pos += count;
+	retval = count;
+out:
+	mutex_unlock(&rpisense_fb->rw_mtx);
+	return retval;
+}
+
+static ssize_t rpisense_fb_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
+{
+	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
+	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
+	u8 temp[VMEM_SIZE];
+	if(*f_pos >= VMEM_SIZE)
+		return -EFBIG;
+	if(*f_pos + count > VMEM_SIZE)
+		count = VMEM_SIZE - *f_pos;
+	if(copy_from_user(temp, buf, count))
+		return -EFAULT;
+	if(mutex_lock_interruptible(&rpisense_fb->rw_mtx))
+		return -ERESTARTSYS;
+	memcpy(rpisense_fb->vmem + *f_pos, temp, count);
+	rpisense_update_framebuffer(rpisense);
+	*f_pos += count;
+	mutex_unlock(&rpisense_fb->rw_mtx);
+	return count;
+}
+
+static long rpisense_fb_ioctl(struct file *filp, unsigned int cmd,
+			     unsigned long arg)
+{
+	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
+	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
+	void __user *user_ptr = (void __user *)arg;
+	u8 temp[GAMMA_SIZE];
+	int ret;
+
+	if (mutex_lock_interruptible(&rpisense_fb->rw_mtx))
+		return -ERESTARTSYS;
+	switch (cmd) {
+	case SENSEFB_FBIOGET_GAMMA:
+		if (copy_to_user(user_ptr, rpisense_fb->gamma, GAMMA_SIZE)) {
+			ret = -EFAULT;
+			goto out_unlock;
+		}
+		ret = 0;
+		goto out_unlock;
+	case SENSEFB_FBIOSET_GAMMA:
+		if (copy_from_user(temp, user_ptr, GAMMA_SIZE)) {
+			ret = -EFAULT;
+			goto out_unlock;
+		}
+		ret = 0;
+		goto out_update;
+	case SENSEFB_FBIORESET_GAMMA:
+		if(arg >= 2) {
+			ret = -EINVAL;
+			goto out_unlock;
+		}
+		memcpy(temp, gamma_presets[arg], GAMMA_SIZE);
+		ret = 0;
+		goto out_update;
+	default:
+		ret = -EINVAL;
+		goto out_unlock;
+	}
+out_update:
+	memcpy(rpisense_fb->gamma, temp, GAMMA_SIZE);
+	rpisense_update_framebuffer(rpisense);
+out_unlock:
+	mutex_unlock(&rpisense_fb->rw_mtx);
+	return ret;
+}
+
+static struct file_operations rpisense_fb_fops =
+{
+	.owner		= THIS_MODULE,
+	.llseek		= rpisense_fb_llseek,
+	.read		= rpisense_fb_read,
+	.write		= rpisense_fb_write,
+	.unlocked_ioctl	= rpisense_fb_ioctl,
+};
 
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_fb_id[] = {
