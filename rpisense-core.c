@@ -58,15 +58,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense->framebuffer.pdev = rpisense_client_dev_register(rpisense,
 								  "rpi-sense-fb");
 
-	return 0;
-}
 
-static int rpisense_remove(struct i2c_client *i2c)
-{
-	struct rpisense *rpisense = i2c_get_clientdata(i2c);
-
-	platform_device_unregister(rpisense->joystick.pdev);
-	platform_device_unregister(rpisense->framebuffer.pdev);
 	return 0;
 }
 
@@ -84,6 +76,11 @@ rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 	ret = platform_device_add(pdev);
 	if (ret != 0)
 		goto add_fail;
+
+	ret = devm_add_action_or_reset(rpisense->dev,
+		(void *)platform_device_unregister, pdev);
+	if(ret != 0)
+		goto alloc_fail;
 
 	return pdev;
 
@@ -136,7 +133,6 @@ static struct i2c_driver rpisense_driver = {
 		   .name = "rpi-sense",
 	},
 	.probe = rpisense_probe,
-	.remove = rpisense_remove,
 	.id_table = rpisense_i2c_id,
 };
 
