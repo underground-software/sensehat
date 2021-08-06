@@ -58,15 +58,9 @@ static int rpisense_fb_probe(struct platform_device *pdev)
 	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 
-	rpisense_fb->gamma = devm_kmalloc(&pdev->dev, 32, GFP_KERNEL);
-	if(!rpisense_fb->gamma)
-		return -ENOMEM;
 	memcpy(rpisense_fb->gamma, gamma_presets[lowlight], 32);
 
-	rpisense_fb->vmem = (void *)devm_get_free_pages(&pdev->dev, GFP_KERNEL, 0);
-	if (!rpisense_fb->vmem)
-		return -ENOMEM;
-	memset(rpisense_fb->vmem, 0, PAGE_SIZE);
+	memset(rpisense_fb->vmem, 0, 128);
 
 	mutex_init(&rpisense_fb->rw_mtx);
 

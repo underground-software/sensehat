@@ -39,8 +39,10 @@ struct rpisense {
 		struct platform_device *pdev;
 		struct miscdevice mdev;
 		struct mutex rw_mtx;
-		u8 *gamma;
-		u8 *vmem;
+		u8 gamma[32];
+		struct {
+			u16 b:5, u:1, g:5, r:5;
+		} vmem[8][8];
 	} framebuffer;
 };
 

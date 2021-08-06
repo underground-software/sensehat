@@ -120,22 +120,19 @@ EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 int rpisense_update_framebuffer(struct rpisense *rpisense)
 {
 	int i,j,ret;
-	u8 vmem_work[193];
-	u16 *mem = (u16 *)rpisense->framebuffer.vmem;
-	u8 *gamma = rpisense->framebuffer.gamma;
+	struct rpisense_fb *fb = &rpisense->framebuffer;
+	struct {u8 reg, pixel_data[8][3][8];} msg;
 
-	vmem_work[0] = RPISENSE_FB;
-	for (j = 0; j < 8; j++) {
-		for (i = 0; i < 8; i++) {
-			vmem_work[(j * 24) + i + 1] =
-				gamma[(mem[(j * 8) + i] >> 11) & 0x1F];
-			vmem_work[(j * 24) + (i + 8) + 1] =
-				gamma[(mem[(j * 8) + i] >> 6) & 0x1F];
-			vmem_work[(j * 24) + (i + 16) + 1] =
-				gamma[(mem[(j * 8) + i]) & 0x1F];
+	msg.reg = RPISENSE_FB;
+	for (i = 0; i < 8; ++i) {
+		for (j = 0; j < 8; ++j) {
+			msg.pixel_data[i][0][j] = fb->gamma[fb->vmem[i][j].r];
+			msg.pixel_data[i][1][j] = fb->gamma[fb->vmem[i][j].g];
+			msg.pixel_data[i][2][j] = fb->gamma[fb->vmem[i][j].b];
 		}
 	}
-	ret = i2c_master_send(rpisense->i2c_client, vmem_work, 193);
+
+	ret = i2c_master_send(rpisense->i2c_client, (u8 *)&msg, sizeof msg);
 	if (ret < 0)
 		dev_err(rpisense->dev, "Update framebuffer failed");
 	return ret;
