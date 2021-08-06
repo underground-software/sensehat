@@ -15,6 +15,7 @@
 
 #include <linux/module.h>
 #include <linux/input.h>
+#include <linux/i2c.h>
 #include <linux/interrupt.h>
 #include <linux/gpio/consumer.h>
 #include <linux/platform_device.h>
@@ -49,6 +50,14 @@ static int rpisense_js_probe(struct platform_device *pdev)
 	int i;
 	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
+
+	rpisense_js->keys_desc = devm_gpiod_get(&rpisense->i2c_client->dev,
+						"keys-int", GPIOD_IN);
+	if (IS_ERR(rpisense_js->keys_desc)) {
+		dev_warn(&pdev->dev, "Failed to get keys-int descriptor.\n");
+		return PTR_ERR(rpisense_js->keys_desc);
+	}
+
 
 	rpisense_js->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (rpisense_js->keys_dev == NULL) {

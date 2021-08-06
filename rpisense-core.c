@@ -31,7 +31,6 @@ static int rpisense_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
 {
 	int ret;
-	struct rpisense_js *rpisense_js;
 
 	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof *rpisense, GFP_KERNEL);
 	if (rpisense == NULL)
@@ -55,13 +54,6 @@ static int rpisense_probe(struct i2c_client *i2c,
 	dev_info(rpisense->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
-	rpisense_js = &rpisense->joystick;
-	rpisense_js->keys_desc = devm_gpiod_get(&i2c->dev,
-						"keys-int", GPIOD_IN);
-	if (IS_ERR(rpisense_js->keys_desc)) {
-		dev_warn(&i2c->dev, "Failed to get keys-int descriptor.\n");
-		return PTR_ERR(rpisense_js->keys_desc);
-	}
 	rpisense_client_dev_register(rpisense, "rpi-sense-js",
 				     &(rpisense->joystick.pdev));
 	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
