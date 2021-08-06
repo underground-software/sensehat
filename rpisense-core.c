@@ -23,9 +23,8 @@
 #include "rpisense.h"
 #include <linux/slab.h>
 
-static void rpisense_client_dev_register(struct rpisense *rpisense,
-					 const char *name,
-					 struct platform_device **pdev);
+static struct platform_device *
+rpisense_client_dev_register(struct rpisense *rpisense, const char *name);
 
 static int rpisense_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
@@ -54,10 +53,10 @@ static int rpisense_probe(struct i2c_client *i2c,
 	dev_info(rpisense->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
-	rpisense_client_dev_register(rpisense, "rpi-sense-js",
-				     &(rpisense->joystick.pdev));
-	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
-				     &(rpisense->framebuffer.pdev));
+	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
+							       "rpi-sense-js");
+	rpisense->framebuffer.pdev = rpisense_client_dev_register(rpisense,
+								  "rpi-sense-fb");
 
 	return 0;
 }
@@ -71,27 +70,27 @@ static int rpisense_remove(struct i2c_client *i2c)
 	return 0;
 }
 
-static void rpisense_client_dev_register(struct rpisense *rpisense,
-					 const char *name,
-					 struct platform_device **pdev)
+static struct platform_device *
+rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 {
-	int ret;
+	long ret = -ENOMEM;
+	struct platform_device *pdev = platform_device_alloc(name, -1);
+	if(pdev == NULL)
+		goto alloc_fail;
 
-	*pdev = platform_device_alloc(name, -1);
-	if (*pdev == NULL) {
-		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
-		return;
-	}
+	pdev->dev.parent = rpisense->dev;
+	platform_set_drvdata(pdev, rpisense);
 
-	(*pdev)->dev.parent = rpisense->dev;
-	platform_set_drvdata(*pdev, rpisense);
-	ret = platform_device_add(*pdev);
-	if (ret != 0) {
-		dev_err(rpisense->dev, "Failed to register %s: %d\n",
-			name, ret);
-		platform_device_put(*pdev);
-		*pdev = NULL;
-	}
+	ret = platform_device_add(pdev);
+	if (ret != 0)
+		goto add_fail;
+
+	return pdev;
+
+add_fail:
+	platform_device_put(pdev);
+alloc_fail:
+	return ERR_PTR(ret);
 }
 
 s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
@@ -146,4 +145,3 @@ module_i2c_driver(rpisense_driver);
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT core driver");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");
-
