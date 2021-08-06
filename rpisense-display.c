@@ -1,17 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Raspberry Pi Sense HAT 8x8 LED matrix display driver
  * http://raspberrypi.org
- *j
+ *
  * Copyright (C) 2015 Raspberry Pi
  * Copyright (C) 2021 Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
  * Original Author: Serge Schneider
  * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
- *
- *  This program is free software; you can redistribute  it and/or modify it
- *  under  the terms of  the GNU General  Public License as published by the
- *  Free Software Foundation;  either version 2 of the  License, or (at your
- *  option) any later version.
  */
 
 #include <linux/module.h>
@@ -26,7 +22,7 @@
 #include <linux/platform_device.h>
 #include <linux/mod_devicetable.h>
 
-#include "rpisense.h"
+#include <linux/mfd/rpisense.h>
 
 #define GAMMA_SIZE sizeof_field(struct rpisense_display, gamma)
 #define VMEM_SIZE sizeof_field(struct rpisense_display, vmem)
@@ -35,8 +31,7 @@ static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
-static const u8 gamma_presets[][GAMMA_SIZE] =
-{
+static const u8 gamma_presets[][GAMMA_SIZE] = {
 	[GAMMA_DEFAULT] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
 		0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -51,7 +46,7 @@ static const u8 gamma_presets[][GAMMA_SIZE] =
 	},
 };
 
-static struct file_operations rpisense_display_fops;
+static const struct file_operations rpisense_display_fops;
 
 static int rpisense_display_probe(struct platform_device *pdev)
 {
@@ -90,6 +85,7 @@ static int rpisense_display_remove(struct platform_device *pdev)
 {
 	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_display *rpisense_display = &rpisense->display;
+
 	misc_deregister(&rpisense_display->mdev);
 	return 0;
 }
@@ -97,8 +93,8 @@ static int rpisense_display_remove(struct platform_device *pdev)
 static loff_t rpisense_display_llseek(struct file *filp, loff_t pos, int whence)
 {
 	loff_t base;
-	switch(whence)
-	{
+
+	switch (whence) {
 	case SEEK_SET:
 		base = 0;
 		break;
@@ -112,24 +108,26 @@ static loff_t rpisense_display_llseek(struct file *filp, loff_t pos, int whence)
 		return -EINVAL;
 	}
 	base += pos;
-	if(base < 0 || base >= VMEM_SIZE)
+	if (base < 0 || base >= VMEM_SIZE)
 		return -EINVAL;
 	filp->f_pos = base;
 	return base;
 }
 
-static ssize_t rpisense_display_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
+static ssize_t
+rpisense_display_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
 	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, display.mdev);
 	struct rpisense_display *rpisense_display = &rpisense->display;
 	ssize_t retval = -EFAULT;
-	if(*f_pos >= VMEM_SIZE)
+
+	if (*f_pos >= VMEM_SIZE)
 		return 0;
-	if(*f_pos + count > VMEM_SIZE)
+	if (*f_pos + count > VMEM_SIZE)
 		count = VMEM_SIZE - *f_pos;
-	if(mutex_lock_interruptible(&rpisense_display->rw_mtx))
+	if (mutex_lock_interruptible(&rpisense_display->rw_mtx))
 		return -ERESTARTSYS;
-	if(copy_to_user(buf, rpisense_display->vmem + *f_pos, count))
+	if (copy_to_user(buf, rpisense_display->vmem + *f_pos, count))
 		goto out;
 	*f_pos += count;
 	retval = count;
@@ -138,18 +136,20 @@ out:
 	return retval;
 }
 
-static ssize_t rpisense_display_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
+static ssize_t
+rpisense_display_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
 	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, display.mdev);
 	struct rpisense_display *rpisense_display = &rpisense->display;
 	u8 temp[VMEM_SIZE];
-	if(*f_pos >= VMEM_SIZE)
+
+	if (*f_pos >= VMEM_SIZE)
 		return -EFBIG;
-	if(*f_pos + count > VMEM_SIZE)
+	if (*f_pos + count > VMEM_SIZE)
 		count = VMEM_SIZE - *f_pos;
-	if(copy_from_user(temp, buf, count))
+	if (copy_from_user(temp, buf, count))
 		return -EFAULT;
-	if(mutex_lock_interruptible(&rpisense_display->rw_mtx))
+	if (mutex_lock_interruptible(&rpisense_display->rw_mtx))
 		return -ERESTARTSYS;
 	memcpy(rpisense_display->vmem + *f_pos, temp, count);
 	rpisense_update_display(rpisense);
@@ -204,8 +204,7 @@ out_unlock:
 	return ret;
 }
 
-static struct file_operations rpisense_display_fops =
-{
+static const struct file_operations rpisense_display_fops = {
 	.owner		= THIS_MODULE,
 	.llseek		= rpisense_display_llseek,
 	.read		= rpisense_display_read,

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Raspberry Pi Sense HAT core driver
  * http://raspberrypi.org
@@ -8,13 +9,8 @@
  * Original Author: Serge Schneider
  * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
  *
- *  This program is free software; you can redistribute  it and/or modify it
- *  under  the terms of  the GNU General  Public License as published by the
- *  Free Software Foundation;  either version 2 of the  License, or (at your
- *  option) any later version.
- *
- *  This driver is based on wm8350 implementation and was refactored to use the
- *  misc device subsystem rather than the deprecated framebuffer subsystem.
+ * This driver is based on wm8350 implementation and was refactored to use the
+ * misc device subsystem rather than the deprecated framebuffer subsystem.
  */
 
 #include <linux/module.h>
@@ -23,8 +19,8 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-#include "rpisense.h"
 #include <linux/slab.h>
+#include <linux/mfd/rpisense.h>
 
 #define RPISENSE_DISPLAY		0x00
 #define RPISENSE_WAI			0xF0
@@ -42,7 +38,8 @@ static int rpisense_probe(struct i2c_client *i2c,
 {
 	int ret;
 
-	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof *rpisense, GFP_KERNEL);
+	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof(*rpisense), GFP_KERNEL);
+
 	if (rpisense == NULL)
 		return -ENOMEM;
 
@@ -56,7 +53,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 		return ret;
 
 	if (ret != RPISENSE_ID)
-			return -EINVAL;
+		return -EINVAL;
 
 	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_VER);
 	if (ret < 0)
@@ -68,7 +65,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
 							       "rpi-sense-js");
 
-	if(IS_ERR(rpisense->joystick.pdev)) {
+	if (IS_ERR(rpisense->joystick.pdev)) {
 		dev_err(rpisense->dev, "failed to register rpisense-js");
 		return PTR_ERR(rpisense->joystick.pdev);
 	}
@@ -76,7 +73,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense->display.pdev = rpisense_client_dev_register(rpisense,
 								  "rpi-sense-fb");
 
-	if(IS_ERR(rpisense->display.pdev)) {
+	if (IS_ERR(rpisense->display.pdev)) {
 		dev_err(rpisense->dev, "failed to register rpisense-fb");
 		return PTR_ERR(rpisense->display.pdev);
 	}
@@ -89,7 +86,8 @@ rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 {
 	long ret = -ENOMEM;
 	struct platform_device *pdev = platform_device_alloc(name, -1);
-	if(pdev == NULL)
+
+	if (pdev == NULL)
 		goto alloc_fail;
 
 	pdev->dev.parent = rpisense->dev;
@@ -101,7 +99,7 @@ rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 
 	ret = devm_add_action_or_reset(rpisense->dev,
 		(void *)platform_device_unregister, pdev);
-	if(ret != 0)
+	if (ret != 0)
 		goto alloc_fail;
 
 	return pdev;
@@ -122,9 +120,9 @@ EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 
 int rpisense_update_display(struct rpisense *rpisense)
 {
-	int i,j,ret;
+	int i, j, ret;
 	struct rpisense_display *display = &rpisense->display;
-	struct {u8 reg, pixel_data[8][3][8];} msg;
+	struct {u8 reg, pixel_data[8][3][8]; } msg;
 
 	msg.reg = RPISENSE_DISPLAY;
 	for (i = 0; i < 8; ++i) {
@@ -135,7 +133,7 @@ int rpisense_update_display(struct rpisense *rpisense)
 		}
 	}
 
-	ret = i2c_master_send(rpisense->i2c_client, (u8 *)&msg, sizeof msg);
+	ret = i2c_master_send(rpisense->i2c_client, (u8 *)&msg, sizeof(msg));
 	if (ret < 0)
 		dev_err(rpisense->dev, "Update to 8x8 LED matrix display failed");
 	return ret;
