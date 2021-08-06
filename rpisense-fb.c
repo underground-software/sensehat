@@ -27,11 +27,14 @@
 
 #include "rpisense.h"
 
+#define GAMMA_SIZE sizeof_field(struct rpisense_fb, gamma)
+#define VMEM_SIZE sizeof_field(struct rpisense_fb, vmem)
+
 static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
 
-static const u8 gamma_presets[][32] =
+static const u8 gamma_presets[][GAMMA_SIZE] =
 {
 	/* default gamma */
 	{
@@ -58,9 +61,9 @@ static int rpisense_fb_probe(struct platform_device *pdev)
 	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 
-	memcpy(rpisense_fb->gamma, gamma_presets[lowlight], 32);
+	memcpy(rpisense_fb->gamma, gamma_presets[lowlight], GAMMA_SIZE);
 
-	memset(rpisense_fb->vmem, 0, 128);
+	memset(rpisense_fb->vmem, 0, VMEM_SIZE);
 
 	mutex_init(&rpisense_fb->rw_mtx);
 
@@ -103,13 +106,13 @@ static loff_t rpisense_fb_llseek(struct file *filp, loff_t pos, int whence)
 		base = filp->f_pos;
 		break;
 	case SEEK_END:
-		base = 128;
+		base = VMEM_SIZE;
 		break;
 	default:
 		return -EINVAL;
 	}
 	base += pos;
-	if(base < 0 || base >= 128)
+	if(base < 0 || base >= VMEM_SIZE)
 		return -EINVAL;
 	filp->f_pos = base;
 	return base;
@@ -120,10 +123,10 @@ static ssize_t rpisense_fb_read(struct file *filp, char __user *buf, size_t coun
 	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 	ssize_t retval = -EFAULT;
-	if(*f_pos >= 128)
+	if(*f_pos >= VMEM_SIZE)
 		return 0;
-	if(*f_pos + count > 128)
-		count = 128 - *f_pos;
+	if(*f_pos + count > VMEM_SIZE)
+		count = VMEM_SIZE - *f_pos;
 	if(mutex_lock_interruptible(&rpisense_fb->rw_mtx))
 		return -ERESTARTSYS;
 	if(copy_to_user(buf, rpisense_fb->vmem + *f_pos, count))
@@ -139,11 +142,11 @@ static ssize_t rpisense_fb_write(struct file *filp, const char __user *buf, size
 {
 	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
-	u8 temp[128];
-	if(*f_pos >= 128)
+	u8 temp[VMEM_SIZE];
+	if(*f_pos >= VMEM_SIZE)
 		return -EFBIG;
-	if(*f_pos + count > 128)
-		count = 128 - *f_pos;
+	if(*f_pos + count > VMEM_SIZE)
+		count = VMEM_SIZE - *f_pos;
 	if(copy_from_user(temp, buf, count))
 		return -EFAULT;
 	if(mutex_lock_interruptible(&rpisense_fb->rw_mtx))
@@ -161,21 +164,21 @@ static long rpisense_fb_ioctl(struct file *filp, unsigned int cmd,
 	struct rpisense *rpisense = container_of(filp->private_data, struct rpisense, framebuffer.mdev);
 	struct rpisense_fb *rpisense_fb = &rpisense->framebuffer;
 	void __user *user_ptr = (void __user *)arg;
-	u8 temp[32];
+	u8 temp[GAMMA_SIZE];
 	int ret;
 
 	if (mutex_lock_interruptible(&rpisense_fb->rw_mtx))
 		return -ERESTARTSYS;
 	switch (cmd) {
 	case SENSEFB_FBIOGET_GAMMA:
-		if (copy_to_user(user_ptr, rpisense_fb->gamma, 32)) {
+		if (copy_to_user(user_ptr, rpisense_fb->gamma, GAMMA_SIZE)) {
 			ret = -EFAULT;
 			goto out_unlock;
 		}
 		ret = 0;
 		goto out_unlock;
 	case SENSEFB_FBIOSET_GAMMA:
-		if (copy_from_user(temp, user_ptr, 32)) {
+		if (copy_from_user(temp, user_ptr, GAMMA_SIZE)) {
 			ret = -EFAULT;
 			goto out_unlock;
 		}
@@ -186,7 +189,7 @@ static long rpisense_fb_ioctl(struct file *filp, unsigned int cmd,
 			ret = -EINVAL;
 			goto out_unlock;
 		}
-		memcpy(temp, gamma_presets[arg], 32);
+		memcpy(temp, gamma_presets[arg], GAMMA_SIZE);
 		ret = 0;
 		goto out_update;
 	default:
@@ -194,7 +197,7 @@ static long rpisense_fb_ioctl(struct file *filp, unsigned int cmd,
 		goto out_unlock;
 	}
 out_update:
-	memcpy(rpisense_fb->gamma, temp, 32);
+	memcpy(rpisense_fb->gamma, temp, GAMMA_SIZE);
 	rpisense_update_framebuffer(rpisense);
 out_unlock:
 	mutex_unlock(&rpisense_fb->rw_mtx);
