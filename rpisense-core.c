@@ -20,37 +20,24 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-#include "core.h"
+#include "rpisense.h"
 #include <linux/slab.h>
 
-static void rpisense_client_dev_register(struct rpisense *rpisense,
-					 const char *name,
-					 struct platform_device **pdev)
-{
-	int ret;
+#define RPISENSE_FB			0x00
+#define RPISENSE_WAI			0xF0
+#define RPISENSE_VER			0xF1
+#define RPISENSE_KEYS			0xF2
+#define RPISENSE_EE_WP			0xF3
 
-	*pdev = platform_device_alloc(name, -1);
-	if (*pdev == NULL) {
-		dev_err(rpisense->dev, "Failed to allocate %s\n", name);
-		return;
-	}
+#define RPISENSE_ID			's'
 
-	(*pdev)->dev.parent = rpisense->dev;
-	platform_set_drvdata(*pdev, rpisense);
-	ret = platform_device_add(*pdev);
-	if (ret != 0) {
-		dev_err(rpisense->dev, "Failed to register %s: %d\n",
-			name, ret);
-		platform_device_put(*pdev);
-		*pdev = NULL;
-	}
-}
+static struct platform_device *
+rpisense_client_dev_register(struct rpisense *rpisense, const char *name);
 
 static int rpisense_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
 {
 	int ret;
-	struct rpisense_js *rpisense_js;
 
 	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof *rpisense, GFP_KERNEL);
 	if (rpisense == NULL)
@@ -60,56 +47,75 @@ static int rpisense_probe(struct i2c_client *i2c,
 	rpisense->dev = &i2c->dev;
 	rpisense->i2c_client = i2c;
 
-	ret = rpisense_reg_read(rpisense, RPISENSE_WAI);
-	if (ret > 0) {
-		if (ret != RPISENSE_ID)
-			return -EINVAL;
-	} else {
+
+	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_WAI);
+	if (ret < 0)
 		return ret;
-	}
-	ret = rpisense_reg_read(rpisense, RPISENSE_VER);
+
+	if (ret != RPISENSE_ID)
+			return -EINVAL;
+
+	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_VER);
 	if (ret < 0)
 		return ret;
 
 	dev_info(rpisense->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
-	rpisense_js = &rpisense->joystick;
-	rpisense_js->keys_desc = devm_gpiod_get(&i2c->dev,
-						"keys-int", GPIOD_IN);
-	if (IS_ERR(rpisense_js->keys_desc)) {
-		dev_warn(&i2c->dev, "Failed to get keys-int descriptor.\n");
-		return PTR_ERR(rpisense_js->keys_desc);
+	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
+							       "rpi-sense-js");
+
+	if(IS_ERR(rpisense->joystick.pdev)) {
+		dev_err(rpisense->dev, "failed to register rpisense-js");
+		return PTR_ERR(rpisense->joystick.pdev);
 	}
-	rpisense_client_dev_register(rpisense, "rpi-sense-js",
-				     &(rpisense->joystick.pdev));
-	rpisense_client_dev_register(rpisense, "rpi-sense-fb",
-				     &(rpisense->framebuffer.pdev));
+
+	rpisense->framebuffer.pdev = rpisense_client_dev_register(rpisense,
+								  "rpi-sense-fb");
+
+	if(IS_ERR(rpisense->framebuffer.pdev)) {
+		dev_err(rpisense->dev, "failed to register rpisense-fb");
+		return PTR_ERR(rpisense->framebuffer.pdev);
+	}
 
 	return 0;
 }
 
-static int rpisense_remove(struct i2c_client *i2c)
+static struct platform_device *
+rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 {
-	struct rpisense *rpisense = i2c_get_clientdata(i2c);
+	long ret = -ENOMEM;
+	struct platform_device *pdev = platform_device_alloc(name, -1);
+	if(pdev == NULL)
+		goto alloc_fail;
 
-	platform_device_unregister(rpisense->joystick.pdev);
-	return 0;
+	pdev->dev.parent = rpisense->dev;
+	platform_set_drvdata(pdev, rpisense);
+
+	ret = platform_device_add(pdev);
+	if (ret != 0)
+		goto add_fail;
+
+	ret = devm_add_action_or_reset(rpisense->dev,
+		(void *)platform_device_unregister, pdev);
+	if(ret != 0)
+		goto alloc_fail;
+
+	return pdev;
+
+add_fail:
+	platform_device_put(pdev);
+alloc_fail:
+	return ERR_PTR(ret);
 }
 
-
-s32 rpisense_reg_read(struct rpisense *rpisense, int reg)
+int rpisense_get_joystick_state(struct rpisense *rpisense)
 {
-	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, reg);
+	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_KEYS);
 
-	if (ret < 0)
-		dev_err(rpisense->dev, "Read from reg %d failed\n", reg);
-	/* Due to the BCM283x I2C clock stretching bug, some values
-	 * may have MSB set. Clear it to avoid incorrect values.
-	 * */
-	return ret & 0x7F;
+	return ret < 0 ? ret : ret & 0x1f;
 }
-EXPORT_SYMBOL_GPL(rpisense_reg_read);
+EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 
 int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
 {
@@ -141,7 +147,6 @@ static struct i2c_driver rpisense_driver = {
 		   .name = "rpi-sense",
 	},
 	.probe = rpisense_probe,
-	.remove = rpisense_remove,
 	.id_table = rpisense_i2c_id,
 };
 
@@ -150,4 +155,3 @@ module_i2c_driver(rpisense_driver);
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT core driver");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");
-

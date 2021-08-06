@@ -14,30 +14,31 @@
  */
 
 #include <linux/module.h>
+#include <linux/input.h>
+#include <linux/i2c.h>
+#include <linux/interrupt.h>
+#include <linux/gpio/consumer.h>
+#include <linux/platform_device.h>
 
-#include "joystick.h"
-#include "core.h"
+#include "rpisense.h"
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
 static irqreturn_t rpisense_js_report(int n, void *cookie)
 {
 	int i;
-	static s32 prev_keys;
-	struct device *dev = cookie;
-	struct rpisense *rpisense = dev_get_drvdata(dev->parent);
+	static s32 prev_keys = 0;
+	struct rpisense *rpisense = cookie;
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
-	s32 keys = rpisense_reg_read(rpisense, RPISENSE_KEYS);
+	s32 keys = rpisense_get_joystick_state(rpisense);
 	s32 changes = keys ^ prev_keys;
 
 	prev_keys = keys;
-	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
-		if (changes & 1) {
+	for (i = 0; i < ARRAY_SIZE(keymap); ++i) {
+		if (changes & (1<<i)) {
 			input_report_key(rpisense_js->keys_dev,
-					 keymap[i], keys & 1);
+					 keymap[i], keys & (1<<i));
 		}
-		changes >>= 1;
-		keys >>= 1;
 	}
 	input_sync(rpisense_js->keys_dev);
 	return IRQ_HANDLED;
@@ -47,11 +48,19 @@ static int rpisense_js_probe(struct platform_device *pdev)
 {
 	int ret;
 	int i;
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
+	struct rpisense *rpisense = dev_get_drvdata(&pdev->dev);
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 
-	rpisense_js->keys_dev = input_allocate_device();
-	if (!rpisense_js->keys_dev) {
+	rpisense_js->keys_desc = devm_gpiod_get(&rpisense->i2c_client->dev,
+						"keys-int", GPIOD_IN);
+	if (IS_ERR(rpisense_js->keys_desc)) {
+		dev_warn(&pdev->dev, "Failed to get keys-int descriptor.\n");
+		return PTR_ERR(rpisense_js->keys_desc);
+	}
+
+
+	rpisense_js->keys_dev = devm_input_allocate_device(&pdev->dev);
+	if (rpisense_js->keys_dev == NULL) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
 		return -ENOMEM;
 	}
@@ -72,46 +81,29 @@ static int rpisense_js_probe(struct platform_device *pdev)
 	ret = input_register_device(rpisense_js->keys_dev);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register input device.\n");
-		goto err_keys_alloc;
+		return ret;
 	}
 
 	ret = gpiod_direction_input(rpisense_js->keys_desc);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not set keys-int direction.\n");
-		goto err_keys_reg;
+		return ret;
 	}
 
 	rpisense_js->keys_irq = gpiod_to_irq(rpisense_js->keys_desc);
 	if (rpisense_js->keys_irq < 0) {
 		dev_err(&pdev->dev, "Could not determine keys-int IRQ.\n");
-		ret = rpisense_js->keys_irq;
-		goto err_keys_reg;
+		return rpisense_js->keys_irq;
 	}
 
 	ret = devm_request_threaded_irq(&pdev->dev, rpisense_js->keys_irq,
 		NULL, rpisense_js_report, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-		"keys", &pdev->dev);
+		"keys", rpisense);
 
 	if (ret) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
-		goto err_keys_reg;
+		return ret;
 	}
-	return 0;
-err_keys_reg:
-	input_unregister_device(rpisense_js->keys_dev);
-err_keys_alloc:
-	input_free_device(rpisense_js->keys_dev);
-	return ret;
-}
-
-
-static int rpisense_js_remove(struct platform_device *pdev)
-{
-	struct rpisense *rpisense = dev_get_drvdata(pdev->dev.parent);
-	struct rpisense_js *rpisense_js = &rpisense->joystick;
-
-	input_unregister_device(rpisense_js->keys_dev);
-	input_free_device(rpisense_js->keys_dev);
 	return 0;
 }
 
@@ -131,7 +123,6 @@ MODULE_DEVICE_TABLE(platform, rpisense_js_device_id);
 
 static struct platform_driver rpisense_js_driver = {
 	.probe = rpisense_js_probe,
-	.remove = rpisense_js_remove,
 	.driver = {
 		.name = "rpi-sense-js",
 	},

@@ -1,5 +1,5 @@
 /*
- * Raspberry Pi Sense HAT framebuffer driver
+ * Raspberry Pi Sense HAT core driver
  * http://raspberrypi.org
  *
  * Copyright (C) 2015 Raspberry Pi
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef __LINUX_RPISENSE_FB_H_
-#define __LINUX_RPISENSE_FB_H_
+#ifndef __LINUX_MFD_RPISENSE_H_
+#define __LINUX_MFD_RPISENSE_H_
 
 #define SENSEFB_FBIO_IOC_MAGIC 0xF1
 
@@ -22,11 +22,24 @@
 #define SENSEFB_FBIOSET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 1)
 #define SENSEFB_FBIORESET_GAMMA _IO(SENSEFB_FBIO_IOC_MAGIC, 2)
 
-struct rpisense;
+struct rpisense {
+	struct device *dev;
+	struct i2c_client *i2c_client;
 
-struct rpisense_fb {
-	struct platform_device *pdev;
-	struct fb_info *info;
+	/* Client devices */
+	struct rpisense_js {
+		struct platform_device *pdev;
+		struct input_dev *keys_dev;
+		struct gpio_desc *keys_desc;
+		int keys_irq;
+	} joystick;
+	struct rpisense_fb {
+		struct platform_device *pdev;
+		struct fb_info *info;
+	} framebuffer;
 };
+
+int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
+int rpisense_get_joystick_state(struct rpisense *rpisense);
 
 #endif
