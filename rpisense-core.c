@@ -117,15 +117,30 @@ int rpisense_get_joystick_state(struct rpisense *rpisense)
 }
 EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
 
-int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count)
+int rpisense_update_framebuffer(struct rpisense *rpisense)
 {
-	int ret = i2c_master_send(rpisense->i2c_client, buf, count);
+	int i,j,ret;
+	u8 vmem_work[193];
+	u16 *mem = (u16 *)rpisense->framebuffer.vmem;
+	u8 *gamma = rpisense->framebuffer.gamma;
 
+	vmem_work[0] = RPISENSE_FB;
+	for (j = 0; j < 8; j++) {
+		for (i = 0; i < 8; i++) {
+			vmem_work[(j * 24) + i + 1] =
+				gamma[(mem[(j * 8) + i] >> 11) & 0x1F];
+			vmem_work[(j * 24) + (i + 8) + 1] =
+				gamma[(mem[(j * 8) + i] >> 6) & 0x1F];
+			vmem_work[(j * 24) + (i + 16) + 1] =
+				gamma[(mem[(j * 8) + i]) & 0x1F];
+		}
+	}
+	ret = i2c_master_send(rpisense->i2c_client, vmem_work, 193);
 	if (ret < 0)
-		dev_err(rpisense->dev, "Block write failed\n");
+		dev_err(rpisense->dev, "Update framebuffer failed");
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rpisense_block_write);
+EXPORT_SYMBOL_GPL(rpisense_update_framebuffer);
 
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "rpi-sense", 0 },

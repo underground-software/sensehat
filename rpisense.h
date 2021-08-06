@@ -15,6 +15,7 @@
 
 #ifndef __LINUX_MFD_RPISENSE_H_
 #define __LINUX_MFD_RPISENSE_H_
+#include <linux/miscdevice.h>
 
 #define SENSEFB_FBIO_IOC_MAGIC 0xF1
 
@@ -33,13 +34,17 @@ struct rpisense {
 		struct gpio_desc *keys_desc;
 		int keys_irq;
 	} joystick;
+
 	struct rpisense_fb {
 		struct platform_device *pdev;
-		struct fb_info *info;
+		struct miscdevice mdev;
+		struct mutex rw_mtx;
+		u8 *gamma;
+		u8 *vmem;
 	} framebuffer;
 };
 
-int rpisense_block_write(struct rpisense *rpisense, const char *buf, int count);
 int rpisense_get_joystick_state(struct rpisense *rpisense);
+int rpisense_update_framebuffer(struct rpisense *rpisense);
 
 #endif
