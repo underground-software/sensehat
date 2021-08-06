@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef __LINUX_MFD_RPISENSE_CORE_H_
-#define __LINUX_MFD_RPISENSE_CORE_H_
+#ifndef __LINUX_MFD_RPISENSE_H_
+#define __LINUX_MFD_RPISENSE_H_
 
 #define SENSEFB_FBIO_IOC_MAGIC 0xF1
 

@@ -25,7 +25,7 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 
-#include "core.h"
+#include "rpisense.h"
 
 static bool lowlight;
 module_param(lowlight, bool, 0);

@@ -19,7 +19,7 @@
 #include <linux/gpio/consumer.h>
 #include <linux/platform_device.h>
 
-#include "core.h"
+#include "rpisense.h"
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
