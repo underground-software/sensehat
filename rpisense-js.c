@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Raspberry Pi Sense HAT joystick driver
  * http://raspberrypi.org
@@ -7,11 +8,6 @@
  *
  * Original Author: Serge Schneider
  * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
- *
- *  This program is free software; you can redistribute  it and/or modify it
- *  under  the terms of  the GNU General  Public License as published by the
- *  Free Software Foundation;  either version 2 of the  License, or (at your
- *  option) any later version.
  */
 
 #include <linux/module.h>
@@ -21,14 +17,14 @@
 #include <linux/gpio/consumer.h>
 #include <linux/platform_device.h>
 
-#include "rpisense.h"
+#include <linux/mfd/rpisense.h>
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
 static irqreturn_t rpisense_js_report(int n, void *cookie)
 {
 	int i;
-	static s32 prev_keys = 0;
+	static s32 prev_keys;
 	struct rpisense *rpisense = cookie;
 	struct rpisense_js *rpisense_js = &rpisense->joystick;
 	s32 keys = rpisense_get_joystick_state(rpisense);
