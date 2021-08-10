@@ -22,7 +22,7 @@
 #include <linux/platform_device.h>
 #include <linux/mod_devicetable.h>
 
-#include <linux/mfd/rpisense.h>
+#include "rpisense.h"
 
 #define GAMMA_SIZE sizeof_field(struct rpisense_display, gamma)
 #define VMEM_SIZE sizeof_field(struct rpisense_display, vmem)
