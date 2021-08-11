@@ -40,7 +40,7 @@ static int rpisense_probe(struct i2c_client *i2c,
 
 	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof(*rpisense), GFP_KERNEL);
 
-	if (rpisense == NULL)
+	if (!rpisense)
 		return -ENOMEM;
 
 	i2c_set_clientdata(i2c, rpisense);
@@ -87,19 +87,19 @@ rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 	long ret = -ENOMEM;
 	struct platform_device *pdev = platform_device_alloc(name, -1);
 
-	if (pdev == NULL)
+	if (!pdev)
 		goto alloc_fail;
 
 	pdev->dev.parent = rpisense->dev;
 	platform_set_drvdata(pdev, rpisense);
 
 	ret = platform_device_add(pdev);
-	if (ret != 0)
+	if (ret)
 		goto add_fail;
 
 	ret = devm_add_action_or_reset(rpisense->dev,
 		(void *)platform_device_unregister, pdev);
-	if (ret != 0)
+	if (ret)
 		goto alloc_fail;
 
 	return pdev;
