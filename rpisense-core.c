@@ -20,7 +20,7 @@
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
-#include <linux/mfd/rpisense.h>
+#include "rpisense.h"
 
 #define RPISENSE_DISPLAY		0x00
 #define RPISENSE_WAI			0xF0
