@@ -57,7 +57,7 @@ static int rpisense_js_probe(struct platform_device *pdev)
 
 
 	rpisense_js->keys_dev = devm_input_allocate_device(&pdev->dev);
-	if (rpisense_js->keys_dev == NULL) {
+	if (!rpisense_js->keys_dev) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
 		return -ENOMEM;
 	}
