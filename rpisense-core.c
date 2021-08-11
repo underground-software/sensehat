@@ -49,11 +49,16 @@ static int rpisense_probe(struct i2c_client *i2c,
 
 
 	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_WAI);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(rpisense->dev, "failed to read from device");
 		return ret;
+	}
 
-	if (ret != RPISENSE_ID)
+	if (ret != RPISENSE_ID) {
+		dev_err(rpisense->dev, "expected device ID %i, got %i",
+			RPISENSE_ID, ret);
 		return -EINVAL;
+	}
 
 	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_VER);
 	if (ret < 0)
