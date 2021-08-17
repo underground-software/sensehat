@@ -20,7 +20,7 @@
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
-#include "rpisense.h"
+#include "sensehat.h"
 
 #define RPISENSE_DISPLAY		0x00
 #define RPISENSE_WAI			0xF0
@@ -31,63 +31,63 @@
 #define RPISENSE_ID			's'
 
 static struct platform_device *
-rpisense_client_dev_register(struct rpisense *rpisense, const char *name);
+sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
 
-static int rpisense_probe(struct i2c_client *i2c,
+static int sensehat_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
 {
 	int ret;
 
-	struct rpisense *rpisense = devm_kzalloc(&i2c->dev, sizeof(*rpisense), GFP_KERNEL);
+	struct sensehat *sensehat = devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
 
-	if (!rpisense)
+	if (!sensehat)
 		return -ENOMEM;
 
-	i2c_set_clientdata(i2c, rpisense);
-	rpisense->dev = &i2c->dev;
-	rpisense->i2c_client = i2c;
+	i2c_set_clientdata(i2c, sensehat);
+	sensehat->dev = &i2c->dev;
+	sensehat->i2c_client = i2c;
 
 
-	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_WAI);
+	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_WAI);
 	if (ret < 0) {
-		dev_err(rpisense->dev, "failed to read from device");
+		dev_err(sensehat->dev, "failed to read from device");
 		return ret;
 	}
 
 	if (ret != RPISENSE_ID) {
-		dev_err(rpisense->dev, "expected device ID %i, got %i",
+		dev_err(sensehat->dev, "expected device ID %i, got %i",
 			RPISENSE_ID, ret);
 		return -EINVAL;
 	}
 
-	ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_VER);
+	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_VER);
 	if (ret < 0)
 		return ret;
 
-	dev_info(rpisense->dev,
+	dev_info(sensehat->dev,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
-	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
+	sensehat->joystick.pdev = sensehat_client_dev_register(sensehat,
 							       "sensehat-joystick");
 
-	if (IS_ERR(rpisense->joystick.pdev)) {
-		dev_err(rpisense->dev, "failed to register sensehat-joystick");
-		return PTR_ERR(rpisense->joystick.pdev);
+	if (IS_ERR(sensehat->joystick.pdev)) {
+		dev_err(sensehat->dev, "failed to register sensehat-joystick");
+		return PTR_ERR(sensehat->joystick.pdev);
 	}
 
-	rpisense->display.pdev = rpisense_client_dev_register(rpisense,
+	sensehat->display.pdev = sensehat_client_dev_register(sensehat,
 								  "sensehat-display");
 
-	if (IS_ERR(rpisense->display.pdev)) {
-		dev_err(rpisense->dev, "failed to register sensehat-display");
-		return PTR_ERR(rpisense->display.pdev);
+	if (IS_ERR(sensehat->display.pdev)) {
+		dev_err(sensehat->dev, "failed to register sensehat-display");
+		return PTR_ERR(sensehat->display.pdev);
 	}
 
 	return 0;
 }
 
 static struct platform_device *
-rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
+sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
 {
 	long ret = -ENOMEM;
 	struct platform_device *pdev = platform_device_alloc(name, -1);
@@ -95,14 +95,14 @@ rpisense_client_dev_register(struct rpisense *rpisense, const char *name)
 	if (!pdev)
 		goto alloc_fail;
 
-	pdev->dev.parent = rpisense->dev;
-	platform_set_drvdata(pdev, rpisense);
+	pdev->dev.parent = sensehat->dev;
+	platform_set_drvdata(pdev, sensehat);
 
 	ret = platform_device_add(pdev);
 	if (ret)
 		goto add_fail;
 
-	ret = devm_add_action_or_reset(rpisense->dev,
+	ret = devm_add_action_or_reset(sensehat->dev,
 		(void *)platform_device_unregister, pdev);
 	if (ret)
 		goto alloc_fail;
@@ -115,18 +115,18 @@ alloc_fail:
 	return ERR_PTR(ret);
 }
 
-int rpisense_get_joystick_state(struct rpisense *rpisense)
+int sensehat_get_joystick_state(struct sensehat *sensehat)
 {
-	int ret = i2c_smbus_read_byte_data(rpisense->i2c_client, RPISENSE_KEYS);
+	int ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_KEYS);
 
 	return ret < 0 ? ret : ret & 0x1f;
 }
-EXPORT_SYMBOL_GPL(rpisense_get_joystick_state);
+EXPORT_SYMBOL_GPL(sensehat_get_joystick_state);
 
-int rpisense_update_display(struct rpisense *rpisense)
+int sensehat_update_display(struct sensehat *sensehat)
 {
 	int i, j, ret;
-	struct rpisense_display *display = &rpisense->display;
+	struct sensehat_display *display = &sensehat->display;
 	struct {u8 reg, pixel_data[8][3][8]; } msg;
 
 	msg.reg = RPISENSE_DISPLAY;
@@ -138,19 +138,19 @@ int rpisense_update_display(struct rpisense *rpisense)
 		}
 	}
 
-	ret = i2c_master_send(rpisense->i2c_client, (u8 *)&msg, sizeof(msg));
+	ret = i2c_master_send(sensehat->i2c_client, (u8 *)&msg, sizeof(msg));
 	if (ret < 0)
-		dev_err(rpisense->dev, "Update to 8x8 LED matrix display failed");
+		dev_err(sensehat->dev, "Update to 8x8 LED matrix display failed");
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rpisense_update_display);
+EXPORT_SYMBOL_GPL(sensehat_update_display);
 
 static const struct i2c_device_id rpisense_i2c_id[] = {
 	{ "sensehat", 0 },
 	{ "rpi-sense", 0 },
 	{ }
 };
-MODULE_DEVICE_TABLE(i2c, rpisense_i2c_id);
+MODULE_DEVICE_TABLE(i2c, sensehat_i2c_id);
 
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_core_id[] = {
@@ -158,19 +158,19 @@ static const struct of_device_id rpisense_core_id[] = {
 	{ .compatible = "rpi,rpi-sense" },
 	{ },
 };
-MODULE_DEVICE_TABLE(of, rpisense_core_id);
+MODULE_DEVICE_TABLE(of, sensehat_core_id);
 #endif
 
 
-static struct i2c_driver rpisense_driver = {
+static struct i2c_driver sensehat_driver = {
 	.driver = {
 		   .name = "sensehat",
 	},
-	.probe = rpisense_probe,
-	.id_table = rpisense_i2c_id,
+	.probe = sensehat_probe,
+	.id_table = sensehat_i2c_id,
 };
 
-module_i2c_driver(rpisense_driver);
+module_i2c_driver(sensehat_driver);
 
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT core driver");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
