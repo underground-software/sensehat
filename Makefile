@@ -1,4 +1,4 @@
-obj-m += rpisense-core.o rpisense-js.o rpisense-display.o
+obj-m += rpisense-core.o rpisense-joystick.o rpisense-display.o
 
 .PHONY: build clean load unload
 
@@ -10,7 +10,7 @@ clean:
 
 load:
 	sudo insmod rpisense-core.ko
-	sudo insmod rpisense-js.ko
+	sudo insmod rpisense-joystick.ko
 	sudo insmod rpisense-display.ko
 unload:
-	-sudo rmmod rpisense_js rpisense_display rpisense_core
+	-sudo rmmod rpisense_joystick rpisense_display rpisense_core
