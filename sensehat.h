@@ -20,19 +20,19 @@
 #define SENSEDISP_IOSET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 1)
 #define SENSEDISP_IORESET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 2)
 
-struct rpisense {
+struct sensehat {
 	struct device *dev;
 	struct i2c_client *i2c_client;
 
 	/* Client devices */
-	struct rpisense_joystick {
+	struct sensehat_joystick {
 		struct platform_device *pdev;
 		struct input_dev *keys_dev;
 		struct gpio_desc *keys_desc;
 		int keys_irq;
 	} joystick;
 
-	struct rpisense_display {
+	struct sensehat_display {
 		struct platform_device *pdev;
 		struct miscdevice mdev;
 		struct mutex rw_mtx;
@@ -49,7 +49,7 @@ enum gamma_preset {
 	GAMMA_PRESET_COUNT,
 };
 
-int rpisense_get_joystick_state(struct rpisense *rpisense);
-int rpisense_update_display(struct rpisense *rpisense);
+int sensehat_get_joystick_state(struct sensehat *sensehat);
+int sensehat_update_display(struct sensehat *sensehat);
 
 #endif

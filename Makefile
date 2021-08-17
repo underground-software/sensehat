@@ -1,4 +1,4 @@
-obj-m += rpisense-core.o rpisense-joystick.o rpisense-display.o
+obj-m += sensehat-core.o sensehat-joystick.o sensehat-display.o
 
 .PHONY: build clean load unload
 
@@ -9,8 +9,8 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build clean M=$(PWD)
 
 load:
-	sudo insmod rpisense-core.ko
-	sudo insmod rpisense-joystick.ko
-	sudo insmod rpisense-display.ko
+	sudo insmod sensehat-core.ko
+	sudo insmod sensehat-joystick.ko
+	sudo insmod sensehat-display.ko
 unload:
-	-sudo rmmod rpisense_joystick rpisense_display rpisense_core
+	-sudo rmmod sensehat_joystick sensehat_display sensehat_core
