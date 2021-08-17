@@ -68,18 +68,18 @@ static int rpisense_probe(struct i2c_client *i2c,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
 	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
-							       "rpi-sense-js");
+							       "sensehat-joystick");
 
 	if (IS_ERR(rpisense->joystick.pdev)) {
-		dev_err(rpisense->dev, "failed to register rpisense-js");
+		dev_err(rpisense->dev, "failed to register sensehat-joystick");
 		return PTR_ERR(rpisense->joystick.pdev);
 	}
 
 	rpisense->display.pdev = rpisense_client_dev_register(rpisense,
-								  "rpi-sense-fb");
+								  "sensehat-display");
 
 	if (IS_ERR(rpisense->display.pdev)) {
-		dev_err(rpisense->dev, "failed to register rpisense-fb");
+		dev_err(rpisense->dev, "failed to register sensehat-display");
 		return PTR_ERR(rpisense->display.pdev);
 	}
 
