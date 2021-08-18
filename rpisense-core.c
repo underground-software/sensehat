@@ -146,6 +146,7 @@ int rpisense_update_display(struct rpisense *rpisense)
 EXPORT_SYMBOL_GPL(rpisense_update_display);
 
 static const struct i2c_device_id rpisense_i2c_id[] = {
+	{ "sensehat", 0 },
 	{ "rpi-sense", 0 },
 	{ }
 };
@@ -153,6 +154,7 @@ MODULE_DEVICE_TABLE(i2c, rpisense_i2c_id);
 
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_core_id[] = {
+	{ .compatible = "raspberrypi,sensehat" },
 	{ .compatible = "rpi,rpi-sense" },
 	{ },
 };
@@ -162,7 +164,7 @@ MODULE_DEVICE_TABLE(of, rpisense_core_id);
 
 static struct i2c_driver rpisense_driver = {
 	.driver = {
-		   .name = "rpi-sense",
+		   .name = "sensehat",
 	},
 	.probe = rpisense_probe,
 	.id_table = rpisense_i2c_id,
