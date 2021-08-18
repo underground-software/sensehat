@@ -145,7 +145,7 @@ int sensehat_update_display(struct sensehat *sensehat)
 }
 EXPORT_SYMBOL_GPL(sensehat_update_display);
 
-static const struct i2c_device_id rpisense_i2c_id[] = {
+static const struct i2c_device_id sensehat_i2c_id[] = {
 	{ "sensehat", 0 },
 	{ "rpi-sense", 0 },
 	{ }
@@ -153,7 +153,7 @@ static const struct i2c_device_id rpisense_i2c_id[] = {
 MODULE_DEVICE_TABLE(i2c, sensehat_i2c_id);
 
 #ifdef CONFIG_OF
-static const struct of_device_id rpisense_core_id[] = {
+static const struct of_device_id sensehat_core_id[] = {
 	{ .compatible = "raspberrypi,sensehat" },
 	{ .compatible = "rpi,rpi-sense" },
 	{ },
