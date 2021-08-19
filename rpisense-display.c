@@ -214,14 +214,14 @@ static const struct file_operations rpisense_display_fops = {
 
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_display_id[] = {
-	{ .compatible = "rpi,rpi-sense-fb" },
+	{ .compatible = "raspberrypi,sensehat-display" },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, rpisense_display_id);
 #endif
 
 static struct platform_device_id rpisense_display_device_id[] = {
-	{ .name = "rpi-sense-fb" },
+	{ .name = "sensehat-display" },
 	{ },
 };
 MODULE_DEVICE_TABLE(platform, rpisense_display_device_id);
@@ -230,7 +230,7 @@ static struct platform_driver rpisense_display_driver = {
 	.probe = rpisense_display_probe,
 	.remove = rpisense_display_remove,
 	.driver = {
-		.name = "rpi-sense-fb",
+		.name = "sensehat-display",
 	},
 };
 

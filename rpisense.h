@@ -25,7 +25,7 @@ struct rpisense {
 	struct i2c_client *i2c_client;
 
 	/* Client devices */
-	struct rpisense_js {
+	struct rpisense_joystick {
 		struct platform_device *pdev;
 		struct input_dev *keys_dev;
 		struct gpio_desc *keys_desc;

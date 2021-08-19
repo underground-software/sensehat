@@ -68,18 +68,18 @@ static int rpisense_probe(struct i2c_client *i2c,
 		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
 
 	rpisense->joystick.pdev = rpisense_client_dev_register(rpisense,
-							       "rpi-sense-js");
+							       "sensehat-joystick");
 
 	if (IS_ERR(rpisense->joystick.pdev)) {
-		dev_err(rpisense->dev, "failed to register rpisense-js");
+		dev_err(rpisense->dev, "failed to register sensehat-joystick");
 		return PTR_ERR(rpisense->joystick.pdev);
 	}
 
 	rpisense->display.pdev = rpisense_client_dev_register(rpisense,
-								  "rpi-sense-fb");
+								  "sensehat-display");
 
 	if (IS_ERR(rpisense->display.pdev)) {
-		dev_err(rpisense->dev, "failed to register rpisense-fb");
+		dev_err(rpisense->dev, "failed to register sensehat-display");
 		return PTR_ERR(rpisense->display.pdev);
 	}
 
@@ -146,6 +146,7 @@ int rpisense_update_display(struct rpisense *rpisense)
 EXPORT_SYMBOL_GPL(rpisense_update_display);
 
 static const struct i2c_device_id rpisense_i2c_id[] = {
+	{ "sensehat", 0 },
 	{ "rpi-sense", 0 },
 	{ }
 };
@@ -153,6 +154,7 @@ MODULE_DEVICE_TABLE(i2c, rpisense_i2c_id);
 
 #ifdef CONFIG_OF
 static const struct of_device_id rpisense_core_id[] = {
+	{ .compatible = "raspberrypi,sensehat" },
 	{ .compatible = "rpi,rpi-sense" },
 	{ },
 };
@@ -162,7 +164,7 @@ MODULE_DEVICE_TABLE(of, rpisense_core_id);
 
 static struct i2c_driver rpisense_driver = {
 	.driver = {
-		   .name = "rpi-sense",
+		   .name = "sensehat",
 	},
 	.probe = rpisense_probe,
 	.id_table = rpisense_i2c_id,
