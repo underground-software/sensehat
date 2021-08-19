@@ -212,14 +212,6 @@ static const struct file_operations sensehat_display_fops = {
 	.unlocked_ioctl	= sensehat_display_ioctl,
 };
 
-#ifdef CONFIG_OF
-static const struct of_device_id sensehat_display_id[] = {
-	{ .compatible = "raspberrypi,sensehat-display" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, sensehat_display_id);
-#endif
-
 static struct platform_device_id sensehat_display_device_id[] = {
 	{ .name = "sensehat-display" },
 	{ },

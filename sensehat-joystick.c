@@ -104,14 +104,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef CONFIG_OF
-static const struct of_device_id sensehat_joystick_id[] = {
-	{ .compatible = "raspberrypi,sensehat-joystick" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, sensehat_joystick_id);
-#endif
-
 static struct platform_device_id sensehat_joystick_device_id[] = {
 	{ .name = "sensehat-joystick" },
 	{ },

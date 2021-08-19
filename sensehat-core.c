@@ -152,16 +152,6 @@ static const struct i2c_device_id sensehat_i2c_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, sensehat_i2c_id);
 
-#ifdef CONFIG_OF
-static const struct of_device_id sensehat_core_id[] = {
-	{ .compatible = "raspberrypi,sensehat" },
-	{ .compatible = "rpi,rpi-sense" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, sensehat_core_id);
-#endif
-
-
 static struct i2c_driver sensehat_driver = {
 	.driver = {
 		   .name = "sensehat",
