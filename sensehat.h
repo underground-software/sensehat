@@ -58,6 +58,4 @@ enum gamma_preset {
 	GAMMA_PRESET_COUNT,
 };
 
-int sensehat_update_display(struct sensehat *sensehat);
-
 #endif

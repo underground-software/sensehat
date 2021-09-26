@@ -137,28 +137,6 @@ static struct regmap_config sensehat_config = {
 	.readable_reg = sensehat_readable_register,
 };
 
-int sensehat_update_display(struct sensehat *sensehat)
-{
-	int i, j, ret;
-	struct sensehat_display *display = &sensehat->display;
-	u8 pixel_data[8][3][8];
-
-	for (i = 0; i < 8; ++i) {
-		for (j = 0; j < 8; ++j) {
-			pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
-			pixel_data[i][1][j] = display->gamma[display->vmem[i][j].g];
-			pixel_data[i][2][j] = display->gamma[display->vmem[i][j].b];
-		}
-	}
-
-	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY,
-				pixel_data, sizeof(pixel_data));
-	if (ret < 0)
-		dev_err(sensehat->dev, "Update to 8x8 LED matrix display failed");
-	return ret;
-}
-EXPORT_SYMBOL_GPL(sensehat_update_display);
-
 static const struct i2c_device_id sensehat_i2c_id[] = {
 	{ "sensehat", 0 },
 	{ "rpi-sense", 0 },
