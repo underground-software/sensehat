@@ -16,8 +16,11 @@
 #include <linux/interrupt.h>
 #include <linux/gpio/consumer.h>
 #include <linux/platform_device.h>
+#include <linux/regmap.h>
 
 #include "sensehat.h"
+
+int sensehat_get_joystick_state(struct sensehat *sensehat);
 
 static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
 
@@ -102,6 +105,14 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return ret;
 	}
 	return 0;
+}
+
+int sensehat_get_joystick_state(struct sensehat *sensehat)
+{
+	unsigned reg;
+	int ret = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &reg);
+
+	return ret < 0 ? ret : reg;
 }
 
 static struct platform_device_id sensehat_joystick_device_id[] = {
