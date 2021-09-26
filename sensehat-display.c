@@ -21,11 +21,14 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/mod_devicetable.h>
+#include <linux/regmap.h>
 
 #include "sensehat.h"
 
 #define GAMMA_SIZE sizeof_field(struct sensehat_display, gamma)
 #define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
+
+int sensehat_update_display(struct sensehat *sensehat);
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
@@ -201,6 +204,27 @@ out_update:
 	sensehat_update_display(sensehat);
 out_unlock:
 	mutex_unlock(&sensehat_display->rw_mtx);
+	return ret;
+}
+
+int sensehat_update_display(struct sensehat *sensehat)
+{
+	int i, j, ret;
+	struct sensehat_display *display = &sensehat->display;
+	sensehat_fb_t pixel_data;
+
+	for (i = 0; i < 8; ++i) {
+		for (j = 0; j < 8; ++j) {
+			pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
+			pixel_data[i][1][j] = display->gamma[display->vmem[i][j].g];
+			pixel_data[i][2][j] = display->gamma[display->vmem[i][j].b];
+		}
+	}
+
+	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY,
+				pixel_data, sizeof(pixel_data));
+	if (ret < 0)
+		dev_err(sensehat->dev, "Update to 8x8 LED matrix display failed");
 	return ret;
 }
 
