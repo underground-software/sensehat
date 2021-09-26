@@ -137,15 +137,6 @@ static struct regmap_config sensehat_config = {
 	.readable_reg = sensehat_readable_register,
 };
 
-int sensehat_get_joystick_state(struct sensehat *sensehat)
-{
-	unsigned reg;
-	int ret = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &reg);
-
-	return ret < 0 ? ret : reg;
-}
-EXPORT_SYMBOL_GPL(sensehat_get_joystick_state);
-
 int sensehat_update_display(struct sensehat *sensehat)
 {
 	int i, j, ret;
