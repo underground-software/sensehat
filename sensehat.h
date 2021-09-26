@@ -10,8 +10,8 @@
  * Revised for upstream Linux by: Charles Mirabile, Mwesigwa Guma, Joel Savitz
  */
 
-#ifndef __LINUX_MFD_RPISENSE_H_
-#define __LINUX_MFD_RPISENSE_H_
+#ifndef __LINUX_MFD_SENSEHAT_H_
+#define __LINUX_MFD_SENSEHAT_H_
 #include <linux/miscdevice.h>
 
 #define SENSEDISP_IOC_MAGIC 0xF1
