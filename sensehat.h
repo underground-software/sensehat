@@ -23,6 +23,7 @@
 struct sensehat {
 	struct device *dev;
 	struct i2c_client *i2c_client;
+	struct regmap *regmap;
 
 	/* Client devices */
 	struct sensehat_joystick {
