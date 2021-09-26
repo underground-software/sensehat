@@ -22,13 +22,13 @@
 #include <linux/slab.h>
 #include "sensehat.h"
 
-#define RPISENSE_DISPLAY		0x00
-#define RPISENSE_WAI			0xF0
-#define RPISENSE_VER			0xF1
-#define RPISENSE_KEYS			0xF2
-#define RPISENSE_EE_WP			0xF3
+#define SENSEHAT_DISPLAY		0x00
+#define SENSEHAT_WAI			0xF0
+#define SENSEHAT_VER			0xF1
+#define SENSEHAT_KEYS			0xF2
+#define SENSEHAT_EE_WP			0xF3
 
-#define RPISENSE_ID			's'
+#define SENSEHAT_ID			's'
 
 static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
@@ -48,19 +48,19 @@ static int sensehat_probe(struct i2c_client *i2c,
 	sensehat->i2c_client = i2c;
 
 
-	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_WAI);
+	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_WAI);
 	if (ret < 0) {
 		dev_err(sensehat->dev, "failed to read from device");
 		return ret;
 	}
 
-	if (ret != RPISENSE_ID) {
+	if (ret != SENSEHAT_ID) {
 		dev_err(sensehat->dev, "expected device ID %i, got %i",
-			RPISENSE_ID, ret);
+			SENSEHAT_ID, ret);
 		return -EINVAL;
 	}
 
-	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_VER);
+	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_VER);
 	if (ret < 0)
 		return ret;
 
@@ -117,7 +117,7 @@ alloc_fail:
 
 int sensehat_get_joystick_state(struct sensehat *sensehat)
 {
-	int ret = i2c_smbus_read_byte_data(sensehat->i2c_client, RPISENSE_KEYS);
+	int ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_KEYS);
 
 	return ret < 0 ? ret : ret & 0x1f;
 }
@@ -129,7 +129,7 @@ int sensehat_update_display(struct sensehat *sensehat)
 	struct sensehat_display *display = &sensehat->display;
 	struct {u8 reg, pixel_data[8][3][8]; } msg;
 
-	msg.reg = RPISENSE_DISPLAY;
+	msg.reg = SENSEHAT_DISPLAY;
 	for (i = 0; i < 8; ++i) {
 		for (j = 0; j < 8; ++j) {
 			msg.pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
