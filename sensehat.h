@@ -61,7 +61,6 @@ enum gamma_preset {
 	GAMMA_PRESET_COUNT,
 };
 
-int sensehat_get_joystick_state(struct sensehat *sensehat);
 int sensehat_update_display(struct sensehat *sensehat);
 
 #endif
