@@ -20,6 +20,7 @@
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/regmap.h>
 #include "sensehat.h"
 
 #define SENSEHAT_DISPLAY		0x00
@@ -33,10 +34,13 @@
 static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
 
+static struct regmap_config sensehat_config;
+
 static int sensehat_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
 {
 	int ret;
+	unsigned reg;
 
 	struct sensehat *sensehat = devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
 
@@ -47,25 +51,34 @@ static int sensehat_probe(struct i2c_client *i2c,
 	sensehat->dev = &i2c->dev;
 	sensehat->i2c_client = i2c;
 
+	sensehat->regmap = devm_regmap_init_i2c(sensehat->i2c_client, &sensehat_config);
 
-	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_WAI);
+	if(IS_ERR(sensehat->regmap)) {
+		dev_err(sensehat->dev, "Failed to initialize sensehat regmap");
+		return PTR_ERR(sensehat->regmap);
+	}
+
+
+	ret = regmap_read(sensehat->regmap, SENSEHAT_WAI, &reg);
 	if (ret < 0) {
 		dev_err(sensehat->dev, "failed to read from device");
 		return ret;
 	}
 
-	if (ret != SENSEHAT_ID) {
+	if (reg != SENSEHAT_ID) {
 		dev_err(sensehat->dev, "expected device ID %i, got %i",
 			SENSEHAT_ID, ret);
 		return -EINVAL;
 	}
 
-	ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_VER);
-	if (ret < 0)
+	ret = regmap_read(sensehat->regmap, SENSEHAT_VER, &reg);
+	if (ret < 0) {
+		dev_err(sensehat->dev, "Unable to get sensehat firmware version");
 		return ret;
+	}
 
 	dev_info(sensehat->dev,
-		 "Raspberry Pi Sense HAT firmware version %i\n", ret);
+		 "Raspberry Pi Sense HAT firmware version %i\n", reg);
 
 	sensehat->joystick.pdev = sensehat_client_dev_register(sensehat,
 							       "sensehat-joystick");
@@ -115,11 +128,29 @@ alloc_fail:
 	return ERR_PTR(ret);
 }
 
+static bool sensehat_writeable_register(struct device *dev, unsigned reg)
+{
+	return (0<=reg && reg<=191) || reg==243;
+}
+static bool sensehat_readable_register(struct device *dev, unsigned reg)
+{
+	return (0<=reg && reg<=191) || (240<=reg && reg <= 243);
+}
+
+static struct regmap_config sensehat_config = {
+	.name = "sensehat",
+	.reg_bits = 8,
+	.val_bits = 8,
+	.writeable_reg = sensehat_writeable_register,
+	.readable_reg = sensehat_readable_register,
+};
+
 int sensehat_get_joystick_state(struct sensehat *sensehat)
 {
-	int ret = i2c_smbus_read_byte_data(sensehat->i2c_client, SENSEHAT_KEYS);
+	unsigned reg;
+	int ret = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &reg);
 
-	return ret < 0 ? ret : ret & 0x1f;
+	return ret < 0 ? ret : reg;
 }
 EXPORT_SYMBOL_GPL(sensehat_get_joystick_state);
 
@@ -127,18 +158,18 @@ int sensehat_update_display(struct sensehat *sensehat)
 {
 	int i, j, ret;
 	struct sensehat_display *display = &sensehat->display;
-	struct {u8 reg, pixel_data[8][3][8]; } msg;
+	u8 pixel_data[8][3][8];
 
-	msg.reg = SENSEHAT_DISPLAY;
 	for (i = 0; i < 8; ++i) {
 		for (j = 0; j < 8; ++j) {
-			msg.pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
-			msg.pixel_data[i][1][j] = display->gamma[display->vmem[i][j].g];
-			msg.pixel_data[i][2][j] = display->gamma[display->vmem[i][j].b];
+			pixel_data[i][0][j] = display->gamma[display->vmem[i][j].r];
+			pixel_data[i][1][j] = display->gamma[display->vmem[i][j].g];
+			pixel_data[i][2][j] = display->gamma[display->vmem[i][j].b];
 		}
 	}
 
-	ret = i2c_master_send(sensehat->i2c_client, (u8 *)&msg, sizeof(msg));
+	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY,
+				pixel_data, sizeof(pixel_data));
 	if (ret < 0)
 		dev_err(sensehat->dev, "Update to 8x8 LED matrix display failed");
 	return ret;
