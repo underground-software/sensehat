@@ -23,14 +23,6 @@
 #include <linux/regmap.h>
 #include "sensehat.h"
 
-#define SENSEHAT_DISPLAY		0x00
-#define SENSEHAT_WAI			0xF0
-#define SENSEHAT_VER			0xF1
-#define SENSEHAT_KEYS			0xF2
-#define SENSEHAT_EE_WP			0xF3
-
-#define SENSEHAT_ID			's'
-
 static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
 
