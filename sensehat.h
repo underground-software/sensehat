@@ -14,6 +14,14 @@
 #define __LINUX_MFD_SENSEHAT_H_
 #include <linux/miscdevice.h>
 
+#define SENSEHAT_DISPLAY		0x00
+#define SENSEHAT_WAI			0xF0
+#define SENSEHAT_VER			0xF1
+#define SENSEHAT_KEYS			0xF2
+#define SENSEHAT_EE_WP			0xF3
+
+#define SENSEHAT_ID			's'
+
 #define SENSEDISP_IOC_MAGIC 0xF1
 
 #define SENSEDISP_IOGET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 0)
