@@ -32,7 +32,7 @@ static int sensehat_probe(struct i2c_client *i2c,
 			       const struct i2c_device_id *id)
 {
 	int ret;
-	unsigned reg;
+	unsigned int reg;
 
 	struct sensehat *sensehat = devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
 
@@ -45,7 +45,7 @@ static int sensehat_probe(struct i2c_client *i2c,
 
 	sensehat->regmap = devm_regmap_init_i2c(sensehat->i2c_client, &sensehat_config);
 
-	if(IS_ERR(sensehat->regmap)) {
+	if (IS_ERR(sensehat->regmap)) {
 		dev_err(sensehat->dev, "Failed to initialize sensehat regmap");
 		return PTR_ERR(sensehat->regmap);
 	}
@@ -120,15 +120,15 @@ alloc_fail:
 	return ERR_PTR(ret);
 }
 
-static bool sensehat_writeable_register(struct device *dev, unsigned reg)
+static bool sensehat_writeable_register(struct device *dev, unsigned int reg)
 {
-	return (SENSEHAT_DISPLAY<=reg &&
+	return (reg >= SENSEHAT_DISPLAY &&
 		reg < SENSEHAT_DISPLAY + sizeof(sensehat_fb_t))
-		|| reg==SENSEHAT_EE_WP;
+		|| reg == SENSEHAT_EE_WP;
 }
-static bool sensehat_readable_register(struct device *dev, unsigned reg)
+static bool sensehat_readable_register(struct device *dev, unsigned int reg)
 {
-	return (SENSEHAT_DISPLAY<=reg &&
+	return (reg >= SENSEHAT_DISPLAY &&
 		reg < SENSEHAT_DISPLAY + sizeof(sensehat_fb_t))
 		|| reg == SENSEHAT_WAI || reg == SENSEHAT_VER
 		|| reg == SENSEHAT_KEYS || reg == SENSEHAT_EE_WP;
