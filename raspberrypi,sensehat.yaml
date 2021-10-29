@@ -16,9 +16,10 @@ description: |
 
 properties:
   compatible:
-    - enum:
-      - raspberrypi,sensehat
-      - rpi,rpisense
+    oneOf:
+      - enum:
+        - raspberrypi,sensehat
+        - rpi,rpisense
 
   reg:
     items:
