@@ -1,7 +1,8 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 $id: http://devicetree.org/schemas/mfd/raspberrypi,sensehat.yaml#
 $schema: http://devicetree.org/meta-schemas/core.yaml#
 
-title: Raspberry Pi Sensehat 
+title: Raspberry Pi Sensehat
 
 maintainers:
   - Charles Mirabile <cmirabil@redhat.com>

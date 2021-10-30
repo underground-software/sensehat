@@ -109,7 +109,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 
 int sensehat_get_joystick_state(struct sensehat *sensehat)
 {
-	unsigned reg;
+	unsigned int reg;
 	int ret = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &reg);
 
 	return ret < 0 ? ret : reg;

@@ -28,7 +28,7 @@
 #define GAMMA_SIZE sizeof_field(struct sensehat_display, gamma)
 #define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
 
-int sensehat_update_display(struct sensehat *sensehat);
+static int sensehat_update_display(struct sensehat *sensehat);
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
@@ -255,4 +255,3 @@ module_platform_driver(sensehat_display_driver);
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT 8x8 LED matrix display driver");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");
-
