@@ -17,12 +17,15 @@
 #include <linux/gpio/consumer.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-
 #include "sensehat.h"
 
-int sensehat_get_joystick_state(struct sensehat *sensehat);
+#define SENSEHAT_KEYS 0xF2
 
-static unsigned char keymap[] = {KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,};
+static int sensehat_get_joystick_state(struct sensehat *sensehat);
+
+static unsigned char keymap[] = {
+	KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,
+};
 
 static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
@@ -35,9 +38,9 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 
 	prev_keys = keys;
 	for (i = 0; i < ARRAY_SIZE(keymap); ++i) {
-		if (changes & (1<<i)) {
-			input_report_key(sensehat_joystick->keys_dev,
-					 keymap[i], keys & (1<<i));
+		if (changes & (1 << i)) {
+			input_report_key(sensehat_joystick->keys_dev, keymap[i],
+					 keys & (1 << i));
 		}
 	}
 	input_sync(sensehat_joystick->keys_dev);
@@ -51,14 +54,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
 	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
 
-	sensehat_joystick->keys_desc = devm_gpiod_get(&sensehat->i2c_client->dev,
-						"keys-int", GPIOD_IN);
-	if (IS_ERR(sensehat_joystick->keys_desc)) {
-		dev_warn(&pdev->dev, "Failed to get keys-int descriptor.\n");
-		return PTR_ERR(sensehat_joystick->keys_desc);
-	}
-
-
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
@@ -66,14 +61,14 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
-		set_bit(keymap[i],
-			sensehat_joystick->keys_dev->keybit);
+		set_bit(keymap[i], sensehat_joystick->keys_dev->keybit);
 	}
 
 	sensehat_joystick->keys_dev->name = "Raspberry Pi Sense HAT Joystick";
 	sensehat_joystick->keys_dev->phys = "rpi-sense-joy/input0";
 	sensehat_joystick->keys_dev->id.bustype = BUS_I2C;
-	sensehat_joystick->keys_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
+	sensehat_joystick->keys_dev->evbit[0] =
+		BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
 	sensehat_joystick->keys_dev->keycode = keymap;
 	sensehat_joystick->keys_dev->keycodesize = sizeof(unsigned char);
 	sensehat_joystick->keys_dev->keycodemax = ARRAY_SIZE(keymap);
@@ -84,21 +79,10 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = gpiod_direction_input(sensehat_joystick->keys_desc);
-	if (ret) {
-		dev_err(&pdev->dev, "Could not set keys-int direction.\n");
-		return ret;
-	}
-
-	sensehat_joystick->keys_irq = gpiod_to_irq(sensehat_joystick->keys_desc);
-	if (sensehat_joystick->keys_irq < 0) {
-		dev_err(&pdev->dev, "Could not determine keys-int IRQ.\n");
-		return sensehat_joystick->keys_irq;
-	}
-
-	ret = devm_request_threaded_irq(&pdev->dev, sensehat_joystick->keys_irq,
-		NULL, sensehat_joystick_report, IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-		"keys", sensehat);
+	ret = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
+					NULL, sensehat_joystick_report,
+					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+					"keys", sensehat);
 
 	if (ret) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
@@ -117,7 +101,7 @@ int sensehat_get_joystick_state(struct sensehat *sensehat)
 
 static struct platform_device_id sensehat_joystick_device_id[] = {
 	{ .name = "sensehat-joystick" },
-	{ },
+	{},
 };
 MODULE_DEVICE_TABLE(platform, sensehat_joystick_device_id);
 
