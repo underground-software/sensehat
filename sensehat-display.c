@@ -96,10 +96,9 @@ static int sensehat_display_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static loff_t sensehat_display_llseek(struct file *filp, loff_t pos, int whence)
+static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
 {
-	loff_t base;
-
+	loff_t base, pos;
 	switch (whence) {
 	case SEEK_SET:
 		base = 0;
@@ -113,10 +112,10 @@ static loff_t sensehat_display_llseek(struct file *filp, loff_t pos, int whence)
 	default:
 		return -EINVAL;
 	}
-	base += pos;
-	if (base < 0 || base >= VMEM_SIZE)
+	pos = base + offset;
+	if (pos < 0 || pos >= VMEM_SIZE)
 		return -EINVAL;
-	filp->f_pos = base;
+	filp->f_pos = pos;
 	return base;
 }
 
