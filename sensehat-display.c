@@ -174,7 +174,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 	struct sensehat_display *sensehat_display = &sensehat->display;
 	void __user *user_ptr = (void __user *)arg;
 	u8 temp[GAMMA_SIZE];
-	int ret = 0;
+	int i, ret = 0;
 	bool update = false;
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
@@ -207,7 +207,8 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 		break;
 	}
 	if (update) {
-		memcpy(sensehat_display->gamma, temp, GAMMA_SIZE);
+		for(i = 0; i < GAMMA_SIZE; ++i)
+			sensehat_display->gamma[i] = temp[i] & 0x1f;
 		sensehat_update_display(sensehat);
 	}
 	mutex_unlock(&sensehat_display->rw_mtx);
