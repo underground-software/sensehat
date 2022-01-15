@@ -8,64 +8,30 @@
 #include <fcntl.h>
 #include <err.h>
 
-typedef union
-{
-	uint16_t agregate;
-	uint8_t bytes[2];
-	struct
-	{
-		uint16_t blue:5;
-		uint16_t green:6;
-		uint16_t red:5;
-	};
-}
-Color;
+static uint8_t screen[8][3][8];
 
-typedef struct
-{
-	uint8_t x:3,y:3;
-}
-Point;
+static int fd;
 
-void update_screen(int fd, void *data, size_t size)
-{
-	if(0 > write(fd, data, size))
-		err(1, "unable to write to fb");
-	if(0 > lseek(fd, 0, SEEK_SET))
-		err(1, "unable to seek fb");
-}
+static void draw_loop(void);
+static void update_screen(void);
 
 int main(int argc, char **argv)
 {
-	//8x8 array of Colors for holding state of frame buffer
-	Color fb[8][8];
-
-	int fd;
-
-	//setup / argc processing code that sets up memory mapping
+	char *filename;
+	switch(argc)
 	{
-		char *filename;
-
-		switch(argc)
-		{
-		case 1:
-			filename = "/dev/sense-hat";
-			break;
-		case 2:
-			filename = argv[1];
-			break;
-		default:
-			errx(1, "invalid arguments");
-		}
-		if(0 > (fd = open(filename, O_RDWR)))
-			err(1, "unable to open %s for writing", filename);
+	case 1:
+		filename = "/dev/sense-hat";
+		break;
+	case 2:
+		filename = argv[1];
+		break;
+	default:
+		errx(1, "invalid arguments");
 	}
+	if(0 > (fd = open(filename, O_RDWR)))
+		err(1, "unable to open %s for writing", filename);
 
-	//clear screen
-	memset(*fb, 0, sizeof fb);
-	update_screen(fd, fb, sizeof fb);
-
-	//ncurses setup
 	initscr();
 	raw();
 	noecho();
@@ -73,12 +39,53 @@ int main(int argc, char **argv)
 	intrflush(stdscr,FALSE);
 	keypad(stdscr,TRUE);
 
+	draw_loop();
+
+	memset(screen, 0, sizeof screen);
+	update_screen();
+
+	endwin();
+	close(fd);
+	return 0;
+}
+
+void update_screen(void)
+{
+	if(0 > write(fd, screen, sizeof screen))
+		err(1, "unable to write to fb");
+	if(0 > lseek(fd, 0, SEEK_SET))
+		err(1, "unable to seek fb");
+}
+
+typedef struct
+{
+	uint8_t x:3,y:3;
+}
+Point;
+
+static void clear_pixel(Point loc)
+{
+	screen[loc.y][0][loc.x]=0;
+	screen[loc.y][1][loc.x]=0;
+	screen[loc.y][2][loc.x]=0;
+}
+
+static void set_pixel(Point loc, uint8_t r, uint8_t g, uint8_t b)
+{
+	screen[loc.y][0][loc.x]=r;
+	screen[loc.y][1][loc.x]=g;
+	screen[loc.y][2][loc.x]=b;
+}
+
+
+void draw_loop(void)
+{
 	Point loc = {0,0};
-	for(_Bool running = 1;running;)
+	for(;;)
 	{
-		//set current location to random color
-		fb[loc.y][loc.x]=(Color){(uint16_t)rand()};
-		update_screen(fd, fb, sizeof fb);
+		set_pixel(loc, rand(), rand(), rand());
+		update_screen();
+		clear_pixel(loc);
 
 		Point newloc = loc;
 		switch(getch())
@@ -96,20 +103,8 @@ int main(int argc, char **argv)
 			++newloc.x;
 			break;
 		case '\r':
-			running = 0;
-			break;
+			return;
 		}
-
-		//clear old location
-		fb[loc.y][loc.x]=(Color){0};
-
-		//update locatation
 		loc = newloc;
-
-		update_screen(fd, fb, sizeof fb);
 	}
-
-	endwin();
-	close(fd);
-	return 0;
 }
