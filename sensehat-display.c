@@ -172,44 +172,36 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 		container_of(filp->private_data, struct sensehat, display.mdev);
 	struct sensehat_display *sensehat_display = &sensehat->display;
 	void __user *user_ptr = (void __user *)arg;
-	u8 temp[GAMMA_SIZE];
 	int i, ret = 0;
-	bool update = false;
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	switch (cmd) {
 	case SENSEDISP_IOGET_GAMMA:
 		if (copy_to_user(user_ptr, sensehat_display->gamma,
-				 GAMMA_SIZE)) {
+				 GAMMA_SIZE))
 			ret = -EFAULT;
-			break;
-		}
-		break;
+		goto no_update;
 	case SENSEDISP_IOSET_GAMMA:
-		if (copy_from_user(temp, user_ptr, GAMMA_SIZE)) {
+		if (copy_from_user(sensehat_display->gamma, user_ptr,
+				GAMMA_SIZE))
 			ret = -EFAULT;
-			break;
-		}
-		update = true;
 		break;
 	case SENSEDISP_IORESET_GAMMA:
-		if (arg < GAMMA_DEFAULT || arg >= GAMMA_PRESET_COUNT) {
+		if (arg < GAMMA_PRESET_COUNT)
+			memcpy(sensehat_display->gamma, gamma_presets[arg],
+				GAMMA_SIZE);
+		else
 			ret = -EINVAL;
-			break;
-		}
-		memcpy(temp, gamma_presets[arg], GAMMA_SIZE);
-		update = true;
 		break;
 	default:
 		ret = -EINVAL;
 		break;
 	}
-	if (update) {
-		for(i = 0; i < GAMMA_SIZE; ++i)
-			sensehat_display->gamma[i] = temp[i] & 0x1f;
-		sensehat_update_display(sensehat);
-	}
+	for(i = 0; i < GAMMA_SIZE; ++i)
+		sensehat_display->gamma[i] &= 0x1f;
+	sensehat_update_display(sensehat);
+no_update:
 	mutex_unlock(&sensehat_display->rw_mtx);
 	return ret;
 }
