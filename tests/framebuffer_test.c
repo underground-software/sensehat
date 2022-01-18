@@ -10,27 +10,28 @@
 
 static uint8_t screen[8][3][8];
 
-static int fd;
+static int disp_fd;
 
 static void draw_loop(void);
 static void update_screen(void);
 
 int main(int argc, char **argv)
 {
-	char *filename;
+	char *disp_filename;
 	switch(argc)
 	{
 	case 1:
-		filename = "/dev/sense-hat";
+		disp_filename = "/dev/sense-hat";
 		break;
 	case 2:
-		filename = argv[1];
+		disp_filename = argv[1];
 		break;
 	default:
 		errx(1, "invalid arguments");
 	}
-	if(0 > (fd = open(filename, O_RDWR)))
-		err(1, "unable to open %s for writing", filename);
+
+	if(0 > (disp_fd = open(disp_filename, O_RDWR)))
+		err(1, "unable to open %s for writing", disp_filename);
 
 	initscr();
 	raw();
@@ -45,15 +46,15 @@ int main(int argc, char **argv)
 	update_screen();
 
 	endwin();
-	close(fd);
+	close(disp_fd);
 	return 0;
 }
 
 void update_screen(void)
 {
-	if(0 > write(fd, screen, sizeof screen))
+	if(0 > write(disp_fd, screen, sizeof screen))
 		err(1, "unable to write to fb");
-	if(0 > lseek(fd, 0, SEEK_SET))
+	if(0 > lseek(disp_fd, 0, SEEK_SET))
 		err(1, "unable to seek fb");
 }
 
