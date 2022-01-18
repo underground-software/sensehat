@@ -79,8 +79,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 
 	error = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
 					NULL, sensehat_joystick_report,
-					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-					"keys", sensehat);
+					IRQF_ONESHOT, "keys", sensehat);
 
 	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
