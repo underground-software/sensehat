@@ -1,5 +1,6 @@
+#include <linux/input.h>
+#include <linux/input-event-codes.h>
 #include <sys/mman.h>
-#include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,43 +11,38 @@
 
 static uint8_t screen[8][3][8];
 
-static int disp_fd;
+static int disp_fd, joy_fd;
 
 static void draw_loop(void);
 static void update_screen(void);
 
 int main(int argc, char **argv)
 {
-	char *disp_filename;
+	char *disp_filename = "/dev/sense-hat";
+	char *joy_filename = "/dev/input/event0";
 	switch(argc)
 	{
-	case 1:
-		disp_filename = "/dev/sense-hat";
-		break;
+	case 3:
+		disp_filename = argv[2];
 	case 2:
-		disp_filename = argv[1];
+		joy_filename = argv[1];
+	case 1:
 		break;
 	default:
 		errx(1, "invalid arguments");
 	}
-
 	if(0 > (disp_fd = open(disp_filename, O_RDWR)))
 		err(1, "unable to open %s for writing", disp_filename);
-
-	initscr();
-	raw();
-	noecho();
-	nonl();
-	intrflush(stdscr,FALSE);
-	keypad(stdscr,TRUE);
+	if(0 > (joy_fd = open(joy_filename, O_RDONLY)))
+		err(1, "unable to open %s for writing", joy_filename);
 
 	draw_loop();
 
 	memset(screen, 0, sizeof screen);
 	update_screen();
 
-	endwin();
 	close(disp_fd);
+	close(joy_fd);
 	return 0;
 }
 
@@ -78,6 +74,37 @@ static void set_pixel(Point loc, uint8_t r, uint8_t g, uint8_t b)
 	screen[loc.y][2][loc.x]=b;
 }
 
+typedef enum
+{
+	UP,DOWN,LEFT,RIGHT,SELECT,
+}
+Direction;
+
+static Direction get_direction(void)
+{
+	struct input_event evt;
+	do
+	{
+		if(0 > read(joy_fd, &evt, sizeof evt))
+			err(1, "unable to read from joystick");
+	}
+	while(evt.type != EV_KEY || evt.value == 0); //released
+	switch(evt.code)
+	{
+	case BTN_DPAD_UP:
+		return UP;
+	case BTN_DPAD_DOWN:
+		return DOWN;
+	case BTN_DPAD_LEFT:
+		return LEFT;
+	case BTN_DPAD_RIGHT:
+		return RIGHT;
+	case BTN_SELECT:
+		return SELECT;
+	default:
+		err(1, "invalid button from joystick");
+	}
+}
 
 void draw_loop(void)
 {
@@ -89,21 +116,21 @@ void draw_loop(void)
 		clear_pixel(loc);
 
 		Point newloc = loc;
-		switch(getch())
+		switch(get_direction())
 		{
-		case KEY_UP:
+		case UP:
 			--newloc.y;
 			break;
-		case KEY_DOWN:
+		case DOWN:
 			++newloc.y;
 			break;
-		case KEY_LEFT:
+		case LEFT:
 			--newloc.x;
 			break;
-		case KEY_RIGHT:
+		case RIGHT:
 			++newloc.x;
 			break;
-		case '\r':
+		case SELECT:
 			return;
 		}
 		loc = newloc;
