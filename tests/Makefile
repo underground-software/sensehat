@@ -1,5 +1,5 @@
 LDLIBS = -lncurses
-EXES = framebuffer_test color_test
+EXES = framebuffer_test color_test joystick_test
 
 .PHONY: all clean
 
