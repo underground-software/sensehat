@@ -29,6 +29,7 @@ struct sensehat {
 	struct sensehat_joystick {
 		struct platform_device *pdev;
 		struct input_dev *keys_dev;
+		unsigned int prev_states;
 	} joystick;
 
 	struct sensehat_display {
