@@ -20,7 +20,6 @@
 
 #define SENSEHAT_KEYS 0xF2
 
-static int sensehat_get_joystick_state(struct sensehat *sensehat);
 
 static const unsigned char keymap[] = {
 	KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,
@@ -28,14 +27,20 @@ static const unsigned char keymap[] = {
 
 static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
-	int i;
+	int i, error;
 	static s32 prev_keys;
 	struct sensehat *sensehat = cookie;
 	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
-	s32 keys = sensehat_get_joystick_state(sensehat);
-	s32 changes = keys ^ prev_keys;
-
+	unsigned int keys, changes;
+	error = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &keys);
+	if (error < 0) {
+		dev_err(&sensehat_joystick->pdev->dev,
+			"Failed to read joystick state: %d", error);
+		return IRQ_NONE;
+	}
+	changes = keys ^ prev_keys;
 	prev_keys = keys;
+
 	for (i = 0; i < ARRAY_SIZE(keymap); ++i) {
 		if (changes & (1 << i)) {
 			input_report_key(sensehat_joystick->keys_dev, keymap[i],
@@ -83,14 +88,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return error;
 	}
 	return 0;
-}
-
-int sensehat_get_joystick_state(struct sensehat *sensehat)
-{
-	unsigned int reg;
-	int ret = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &reg);
-
-	return ret < 0 ? ret : reg;
 }
 
 static struct platform_device_id sensehat_joystick_device_id[] = {
