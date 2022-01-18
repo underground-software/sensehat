@@ -65,7 +65,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	}
 
 	sensehat_joystick->keys_dev->name = "Raspberry Pi Sense HAT Joystick";
-	sensehat_joystick->keys_dev->phys = "rpi-sense-joy/input0";
+	sensehat_joystick->keys_dev->phys = "sensehat-joystick/input0";
 	sensehat_joystick->keys_dev->id.bustype = BUS_I2C;
 	sensehat_joystick->keys_dev->evbit[0] =
 		BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
