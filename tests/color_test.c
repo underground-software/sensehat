@@ -14,7 +14,7 @@ static const uint8_t gamma[] = {
 	030,031,032,033,034,035,036,037,
 };
 
-void set(FILE *fp, uint8_t rgb[3])
+static void set(FILE *fp, uint8_t rgb[3])
 {
 	rewind(fp);
 	for(size_t i = 0; i < 8; ++i)
@@ -55,11 +55,12 @@ int main(int argc, char **argv)
 	for(int i = 0; i < 3; ++i)
 	{
 		uint8_t channels[3] = {0};
+		channels[i] = 1;
 		for(int j = 0; j < 5; ++j)
 		{
-			channels[i] = 1 << j;
 			set(fp, channels);
 			puts(msg[i][j]);
+			channels[i]<<=1;
 			getchar();
 		}
 	}

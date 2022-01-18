@@ -24,8 +24,10 @@ int main(int argc, char **argv)
 	{
 	case 3:
 		disp_filename = argv[2];
+		[[fallthrough]];
 	case 2:
 		joy_filename = argv[1];
+		[[fallthrough]];
 	case 1:
 		break;
 	default:
@@ -67,11 +69,26 @@ static void clear_pixel(Point loc)
 	screen[loc.y][2][loc.x]=0;
 }
 
-static void set_pixel(Point loc, uint8_t r, uint8_t g, uint8_t b)
+typedef union
 {
-	screen[loc.y][0][loc.x]=r;
-	screen[loc.y][1][loc.x]=g;
-	screen[loc.y][2][loc.x]=b;
+	uint16_t combined;
+	struct
+	{
+		uint8_t r:5,g:5,b:5;
+	};
+}
+Color;
+
+static Color get_random_color(void)
+{
+	return (Color){.combined = (uint16_t)rand()};
+}
+
+static void set_pixel(Point loc, Color col)
+{
+	screen[loc.y][0][loc.x]=col.r;
+	screen[loc.y][1][loc.x]=col.g;
+	screen[loc.y][2][loc.x]=col.b;
 }
 
 typedef enum
@@ -111,7 +128,7 @@ void draw_loop(void)
 	Point loc = {0,0};
 	for(;;)
 	{
-		set_pixel(loc, rand(), rand(), rand());
+		set_pixel(loc, get_random_color());
 		update_screen();
 		clear_pixel(loc);
 
