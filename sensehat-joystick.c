@@ -48,8 +48,7 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 
 static int sensehat_joystick_probe(struct platform_device *pdev)
 {
-	int ret;
-	int i;
+	int error, i;
 	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
 	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
 
@@ -72,20 +71,20 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	sensehat_joystick->keys_dev->keycodesize = sizeof(unsigned char);
 	sensehat_joystick->keys_dev->keycodemax = ARRAY_SIZE(keymap);
 
-	ret = input_register_device(sensehat_joystick->keys_dev);
-	if (ret) {
+	error = input_register_device(sensehat_joystick->keys_dev);
+	if (error) {
 		dev_err(&pdev->dev, "Could not register input device.\n");
-		return ret;
+		return error;
 	}
 
-	ret = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
+	error = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
 					NULL, sensehat_joystick_report,
 					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
 					"keys", sensehat);
 
-	if (ret) {
+	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
-		return ret;
+		return error;
 	}
 	return 0;
 }
