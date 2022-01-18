@@ -27,23 +27,23 @@ static const unsigned char keymap[] = {
 
 static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
-	int i, error;
+	int i, error, keys;
 	struct sensehat *sensehat = cookie;
 	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
-	unsigned int keys, changes;
+	unsigned long curr_states, changes;
 	error = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
 			"Failed to read joystick state: %d", error);
 		return IRQ_NONE;
 	}
-	changes = keys ^ sensehat_joystick->prev_states;
+	curr_states = keys;
+	bitmap_xor(&changes, &curr_states,
+		&sensehat_joystick->prev_states, ARRAY_SIZE(keymap));
 
-	for (i = 0; i < ARRAY_SIZE(keymap); ++i) {
-		if (changes & (1 << i)) {
-			input_report_key(sensehat_joystick->keys_dev, keymap[i],
-					 keys & (1 << i));
-		}
+	for_each_set_bit(i, &changes, ARRAY_SIZE(keymap)) {
+		input_report_key(sensehat_joystick->keys_dev,
+			keymap[i], curr_states & BIT(i));
 	}
 	input_sync(sensehat_joystick->keys_dev);
 	sensehat_joystick->prev_states = keys;
