@@ -22,7 +22,7 @@
 
 static int sensehat_get_joystick_state(struct sensehat *sensehat);
 
-static unsigned char keymap[] = {
+static const unsigned char keymap[] = {
 	KEY_DOWN, KEY_RIGHT, KEY_UP, KEY_ENTER, KEY_LEFT,
 };
 
@@ -67,9 +67,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	sensehat_joystick->keys_dev->id.bustype = BUS_I2C;
 	sensehat_joystick->keys_dev->evbit[0] =
 		BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
-	sensehat_joystick->keys_dev->keycode = keymap;
-	sensehat_joystick->keys_dev->keycodesize = sizeof(unsigned char);
-	sensehat_joystick->keys_dev->keycodemax = ARRAY_SIZE(keymap);
 
 	error = input_register_device(sensehat_joystick->keys_dev);
 	if (error) {
