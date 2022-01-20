@@ -74,7 +74,7 @@ typedef union
 	uint16_t combined;
 	struct
 	{
-		uint8_t r:5,g:5,b:5;
+		uint16_t r:5,g:5,b:5;
 	};
 }
 Color;
