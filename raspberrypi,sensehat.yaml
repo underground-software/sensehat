@@ -9,7 +9,7 @@ maintainers:
   - Mwesigwa Guma <mguma@redhat.com>
   - Joel Savitz <jsavitz@redhat.com>
 
-description: |
+description:
   The Raspberry Pi Sensehat is an addon board originally developed
   for the Raspberry Pi that has a joystick and an 8x8 RGB LED display
   as well as several environmental sensors. It connects via i2c and
@@ -17,23 +17,25 @@ description: |
 
 properties:
   compatible:
-    oneOf:
-      - enum:
-        - raspberrypi,sensehat
-        - rpi,rpisense
+    const: raspberrypi,sensehat
 
   reg:
     items:
       - description: i2c bus address
 
-  keys-int-gpios:
+  interrupts:
     items:
-      - description: gpio pin for joystick interrupt
+      - description: pin number for joystick interrupt
+
+  interrupt-parent:
+    items:
+      - description: gpio pin bank for interrupt pin
 
 required:
   - compatible
   - reg
-  - keys-int-gpios
+  - interrupts
+  - interrupt-parent
 
 additionalProperties: false
 
@@ -46,6 +48,7 @@ examples:
       sensehat@46 {
         compatible = "raspberrypi,sensehat";
         reg = <0x46>;
-        keys-int-gpios = <&gpio 23 GPIO_ACTIVE_HIGH>;
+        interrupts = <23 GPIO_ACTIVE_HIGH>;
+        interrupt-parent = <&gpio>;
       };
     };

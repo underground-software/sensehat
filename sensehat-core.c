@@ -1,3 +1,5 @@
+#define CONFIG_SENSEHAT_DISPLAY
+#define CONFIG_JOYSTICK_SENSEHAT
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Raspberry Pi Sense HAT core driver
@@ -23,18 +25,24 @@
 #include <linux/regmap.h>
 #include "sensehat.h"
 
+#define SENSEHAT_WAI 0xF0
+#define SENSEHAT_VER 0xF1
+
+#define SENSEHAT_ID 's'
+
 static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
 
 static struct regmap_config sensehat_config;
 
 static int sensehat_probe(struct i2c_client *i2c,
-			       const struct i2c_device_id *id)
+			  const struct i2c_device_id *id)
 {
 	int ret;
 	unsigned int reg;
 
-	struct sensehat *sensehat = devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
+	struct sensehat *sensehat =
+		devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
 
 	if (!sensehat)
 		return -ENOMEM;
@@ -43,13 +51,13 @@ static int sensehat_probe(struct i2c_client *i2c,
 	sensehat->dev = &i2c->dev;
 	sensehat->i2c_client = i2c;
 
-	sensehat->regmap = devm_regmap_init_i2c(sensehat->i2c_client, &sensehat_config);
+	sensehat->regmap =
+		devm_regmap_init_i2c(sensehat->i2c_client, &sensehat_config);
 
 	if (IS_ERR(sensehat->regmap)) {
 		dev_err(sensehat->dev, "Failed to initialize sensehat regmap");
 		return PTR_ERR(sensehat->regmap);
 	}
-
 
 	ret = regmap_read(sensehat->regmap, SENSEHAT_WAI, &reg);
 	if (ret < 0) {
@@ -65,28 +73,33 @@ static int sensehat_probe(struct i2c_client *i2c,
 
 	ret = regmap_read(sensehat->regmap, SENSEHAT_VER, &reg);
 	if (ret < 0) {
-		dev_err(sensehat->dev, "Unable to get sensehat firmware version");
+		dev_err(sensehat->dev,
+			"Unable to get sensehat firmware version");
 		return ret;
 	}
 
-	dev_info(sensehat->dev,
-		 "Raspberry Pi Sense HAT firmware version %i\n", reg);
+	dev_info(sensehat->dev, "Raspberry Pi Sense HAT firmware version %i\n",
+		 reg);
 
-	sensehat->joystick.pdev = sensehat_client_dev_register(sensehat,
-							       "sensehat-joystick");
+#ifdef CONFIG_JOYSTICK_SENSEHAT
+	sensehat->joystick.pdev =
+		sensehat_client_dev_register(sensehat, "sensehat-joystick");
 
 	if (IS_ERR(sensehat->joystick.pdev)) {
 		dev_err(sensehat->dev, "failed to register sensehat-joystick");
 		return PTR_ERR(sensehat->joystick.pdev);
 	}
+#endif
+#ifdef CONFIG_SENSEHAT_DISPLAY
 
-	sensehat->display.pdev = sensehat_client_dev_register(sensehat,
-								  "sensehat-display");
+	sensehat->display.pdev =
+		sensehat_client_dev_register(sensehat, "sensehat-display");
 
 	if (IS_ERR(sensehat->display.pdev)) {
 		dev_err(sensehat->dev, "failed to register sensehat-display");
 		return PTR_ERR(sensehat->display.pdev);
 	}
+#endif
 
 	return 0;
 }
@@ -95,7 +108,8 @@ static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
 {
 	long ret = -ENOMEM;
-	struct platform_device *pdev = platform_device_alloc(name, -1);
+	struct platform_device *pdev =
+		platform_device_alloc(name, PLATFORM_DEVID_AUTO);
 
 	if (!pdev)
 		goto alloc_fail;
@@ -107,8 +121,8 @@ sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
 	if (ret)
 		goto add_fail;
 
-	ret = devm_add_action_or_reset(sensehat->dev,
-		(void *)platform_device_unregister, pdev);
+	ret = devm_add_action_or_reset(
+		sensehat->dev, (void *)platform_device_unregister, pdev);
 	if (ret)
 		goto alloc_fail;
 
@@ -120,39 +134,20 @@ alloc_fail:
 	return ERR_PTR(ret);
 }
 
-static bool sensehat_writeable_register(struct device *dev, unsigned int reg)
-{
-	return (reg >= SENSEHAT_DISPLAY &&
-		reg < SENSEHAT_DISPLAY + sizeof(sensehat_fb_t))
-		|| reg == SENSEHAT_EE_WP;
-}
-static bool sensehat_readable_register(struct device *dev, unsigned int reg)
-{
-	return (reg >= SENSEHAT_DISPLAY &&
-		reg < SENSEHAT_DISPLAY + sizeof(sensehat_fb_t))
-		|| reg == SENSEHAT_WAI || reg == SENSEHAT_VER
-		|| reg == SENSEHAT_KEYS || reg == SENSEHAT_EE_WP;
-}
-
 static struct regmap_config sensehat_config = {
 	.name = "sensehat",
 	.reg_bits = 8,
 	.val_bits = 8,
-	.writeable_reg = sensehat_writeable_register,
-	.readable_reg = sensehat_readable_register,
 };
 
 static const struct i2c_device_id sensehat_i2c_id[] = {
-	{ "sensehat", 0 },
-	{ "rpi-sense", 0 },
-	{ }
+	{ .name = "sensehat" },
+	{},
 };
 MODULE_DEVICE_TABLE(i2c, sensehat_i2c_id);
 
 static struct i2c_driver sensehat_driver = {
-	.driver = {
-		   .name = "sensehat",
-	},
+	.driver = { .name = "sensehat" },
 	.probe = sensehat_probe,
 	.id_table = sensehat_i2c_id,
 };
