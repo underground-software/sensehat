@@ -29,7 +29,7 @@
 #define GAMMA_SIZE sizeof_field(struct sensehat_display, gamma)
 #define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
 
-static int sensehat_update_display(struct sensehat *sensehat);
+static void sensehat_update_display(struct sensehat *sensehat);
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
@@ -96,10 +96,9 @@ static int sensehat_display_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static loff_t sensehat_display_llseek(struct file *filp, loff_t pos, int whence)
+static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
 {
-	loff_t base;
-
+	loff_t base, pos;
 	switch (whence) {
 	case SEEK_SET:
 		base = 0;
@@ -113,10 +112,10 @@ static loff_t sensehat_display_llseek(struct file *filp, loff_t pos, int whence)
 	default:
 		return -EINVAL;
 	}
-	base += pos;
-	if (base < 0 || base >= VMEM_SIZE)
+	pos = base + offset;
+	if (pos < 0 || pos >= VMEM_SIZE)
 		return -EINVAL;
-	filp->f_pos = base;
+	filp->f_pos = pos;
 	return base;
 }
 
@@ -149,21 +148,24 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 	struct sensehat *sensehat =
 		container_of(filp->private_data, struct sensehat, display.mdev);
 	struct sensehat_display *sensehat_display = &sensehat->display;
-	u8 temp[VMEM_SIZE];
+	int ret = count;
 
 	if (*f_pos >= VMEM_SIZE)
 		return -EFBIG;
 	if (*f_pos + count > VMEM_SIZE)
 		count = VMEM_SIZE - *f_pos;
-	if (copy_from_user(temp, buf, count))
-		return -EFAULT;
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
-	memcpy(sensehat_display->vmem + *f_pos, temp, count);
+	if (copy_from_user(sensehat_display->vmem + *f_pos, buf, count))
+	{
+		ret = -EFAULT;
+		goto out;
+	}
 	sensehat_update_display(sensehat);
 	*f_pos += count;
+out:
 	mutex_unlock(&sensehat_display->rw_mtx);
-	return count;
+	return ret;
 }
 
 static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
@@ -173,70 +175,54 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 		container_of(filp->private_data, struct sensehat, display.mdev);
 	struct sensehat_display *sensehat_display = &sensehat->display;
 	void __user *user_ptr = (void __user *)arg;
-	u8 temp[GAMMA_SIZE];
-	int ret = 0;
-	bool update = false;
+	int i, ret = 0;
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	switch (cmd) {
 	case SENSEDISP_IOGET_GAMMA:
 		if (copy_to_user(user_ptr, sensehat_display->gamma,
-				 GAMMA_SIZE)) {
+				 GAMMA_SIZE))
 			ret = -EFAULT;
-			break;
-		}
-		break;
+		goto no_update;
 	case SENSEDISP_IOSET_GAMMA:
-		if (copy_from_user(temp, user_ptr, GAMMA_SIZE)) {
+		if (copy_from_user(sensehat_display->gamma, user_ptr,
+				GAMMA_SIZE))
 			ret = -EFAULT;
-			break;
-		}
-		update = true;
 		break;
 	case SENSEDISP_IORESET_GAMMA:
-		if (arg < GAMMA_DEFAULT || arg >= GAMMA_PRESET_COUNT) {
+		if (arg < GAMMA_PRESET_COUNT)
+			memcpy(sensehat_display->gamma, gamma_presets[arg],
+				GAMMA_SIZE);
+		else
 			ret = -EINVAL;
-			break;
-		}
-		memcpy(temp, gamma_presets[arg], GAMMA_SIZE);
-		update = true;
 		break;
 	default:
 		ret = -EINVAL;
 		break;
 	}
-	if (update) {
-		memcpy(sensehat_display->gamma, temp, GAMMA_SIZE);
-		sensehat_update_display(sensehat);
-	}
+	for(i = 0; i < GAMMA_SIZE; ++i)
+		sensehat_display->gamma[i] &= 0x1f;
+	sensehat_update_display(sensehat);
+no_update:
 	mutex_unlock(&sensehat_display->rw_mtx);
 	return ret;
 }
 
-int sensehat_update_display(struct sensehat *sensehat)
+void sensehat_update_display(struct sensehat *sensehat)
 {
-	int i, j, ret;
+	int i, ret;
 	struct sensehat_display *display = &sensehat->display;
-	u8 pixel_data[8][3][8];
+	u8 temp[VMEM_SIZE];
 
-	for (i = 0; i < 8; ++i) {
-		for (j = 0; j < 8; ++j) {
-			pixel_data[i][0][j] =
-				display->gamma[display->vmem[i][j].r];
-			pixel_data[i][1][j] =
-				display->gamma[display->vmem[i][j].g];
-			pixel_data[i][2][j] =
-				display->gamma[display->vmem[i][j].b];
-		}
-	}
+	for(i = 0; i < VMEM_SIZE; ++i)
+		temp[i] = display->gamma[display->vmem[i] & 0x1f];
 
-	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY, pixel_data,
-				sizeof(pixel_data));
+	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY, temp,
+				VMEM_SIZE);
 	if (ret < 0)
 		dev_err(sensehat->dev,
 			"Update to 8x8 LED matrix display failed");
-	return ret;
 }
 
 static const struct file_operations sensehat_display_fops = {
