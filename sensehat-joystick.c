@@ -27,10 +27,11 @@ static const unsigned int keymap[] = {
 static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
 	int i, error, keys;
-	struct sensehat *sensehat = cookie;
-	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
+	struct sensehat_joystick *sensehat_joystick = cookie;
+	struct regmap *regmap = dev_get_regmap(
+		sensehat_joystick->pdev->dev.parent, NULL);
 	unsigned long curr_states, changes;
-	error = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &keys);
+	error = regmap_read(regmap, SENSEHAT_KEYS, &keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
 			"Failed to read joystick state: %d", error);
@@ -79,7 +80,8 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 
 	error = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
 					NULL, sensehat_joystick_report,
-					IRQF_ONESHOT, "keys", sensehat);
+					IRQF_ONESHOT, "keys",
+					sensehat_joystick);
 
 	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
