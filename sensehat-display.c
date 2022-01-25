@@ -29,8 +29,6 @@
 #define GAMMA_SIZE sizeof_field(struct sensehat_display, gamma)
 #define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
 
-static void sensehat_update_display(struct sensehat *sensehat);
-
 static bool lowlight;
 module_param(lowlight, bool, 0);
 MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
@@ -51,6 +49,22 @@ static const u8 gamma_presets[][GAMMA_SIZE] = {
 };
 
 static const struct file_operations sensehat_display_fops;
+
+static void sensehat_update_display(struct sensehat *sensehat)
+{
+	int i, ret;
+	struct sensehat_display *display = &sensehat->display;
+	u8 temp[VMEM_SIZE];
+
+	for(i = 0; i < VMEM_SIZE; ++i)
+		temp[i] = display->gamma[display->vmem[i] & 0x1f];
+
+	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY, temp,
+				VMEM_SIZE);
+	if (ret < 0)
+		dev_err(sensehat->dev,
+			"Update to 8x8 LED matrix display failed");
+}
 
 static int sensehat_display_probe(struct platform_device *pdev)
 {
@@ -209,21 +223,6 @@ no_update:
 	return ret;
 }
 
-void sensehat_update_display(struct sensehat *sensehat)
-{
-	int i, ret;
-	struct sensehat_display *display = &sensehat->display;
-	u8 temp[VMEM_SIZE];
-
-	for(i = 0; i < VMEM_SIZE; ++i)
-		temp[i] = display->gamma[display->vmem[i] & 0x1f];
-
-	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY, temp,
-				VMEM_SIZE);
-	if (ret < 0)
-		dev_err(sensehat->dev,
-			"Update to 8x8 LED matrix display failed");
-}
 
 static const struct file_operations sensehat_display_fops = {
 	.owner = THIS_MODULE,
