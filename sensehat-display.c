@@ -48,8 +48,6 @@ static const u8 gamma_presets[][GAMMA_SIZE] = {
 	},
 };
 
-static const struct file_operations sensehat_display_fops;
-
 static void sensehat_update_display(struct sensehat *sensehat)
 {
 	int i, ret;
@@ -64,50 +62,6 @@ static void sensehat_update_display(struct sensehat *sensehat)
 	if (ret < 0)
 		dev_err(sensehat->dev,
 			"Update to 8x8 LED matrix display failed");
-}
-
-static int sensehat_display_probe(struct platform_device *pdev)
-{
-	int ret;
-
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
-
-	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
-
-	memset(sensehat_display->vmem, 0, VMEM_SIZE);
-
-	mutex_init(&sensehat_display->rw_mtx);
-
-	sensehat_display->mdev = (struct miscdevice){
-		.minor = MISC_DYNAMIC_MINOR,
-		.name = "sense-hat",
-		.mode = 0666,
-		.fops = &sensehat_display_fops,
-	};
-
-	ret = misc_register(&sensehat_display->mdev);
-	if (ret < 0) {
-		dev_err(&pdev->dev,
-			"Could not register 8x8 LED matrix display.\n");
-		return ret;
-	}
-
-	dev_info(&pdev->dev,
-		 "8x8 LED matrix display registered with minor number %i",
-		 sensehat_display->mdev.minor);
-
-	sensehat_update_display(sensehat);
-	return 0;
-}
-
-static int sensehat_display_remove(struct platform_device *pdev)
-{
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
-
-	misc_deregister(&sensehat_display->mdev);
-	return 0;
 }
 
 static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
@@ -223,7 +177,6 @@ no_update:
 	return ret;
 }
 
-
 static const struct file_operations sensehat_display_fops = {
 	.owner = THIS_MODULE,
 	.llseek = sensehat_display_llseek,
@@ -231,6 +184,52 @@ static const struct file_operations sensehat_display_fops = {
 	.write = sensehat_display_write,
 	.unlocked_ioctl = sensehat_display_ioctl,
 };
+
+static int sensehat_display_probe(struct platform_device *pdev)
+{
+	int ret;
+
+	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
+	struct sensehat_display *sensehat_display = &sensehat->display;
+
+	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
+
+	memset(sensehat_display->vmem, 0, VMEM_SIZE);
+
+	mutex_init(&sensehat_display->rw_mtx);
+
+	sensehat_display->mdev = (struct miscdevice){
+		.minor = MISC_DYNAMIC_MINOR,
+		.name = "sense-hat",
+		.mode = 0666,
+		.fops = &sensehat_display_fops,
+	};
+
+	ret = misc_register(&sensehat_display->mdev);
+	if (ret < 0) {
+		dev_err(&pdev->dev,
+			"Could not register 8x8 LED matrix display.\n");
+		return ret;
+	}
+
+	dev_info(&pdev->dev,
+		 "8x8 LED matrix display registered with minor number %i",
+		 sensehat_display->mdev.minor);
+
+	sensehat_update_display(sensehat);
+	return 0;
+}
+
+static int sensehat_display_remove(struct platform_device *pdev)
+{
+	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
+	struct sensehat_display *sensehat_display = &sensehat->display;
+
+	misc_deregister(&sensehat_display->mdev);
+	return 0;
+}
+
+
 
 static struct platform_device_id sensehat_display_device_id[] = {
 	{ .name = "sensehat-display" },
