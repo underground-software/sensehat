@@ -30,7 +30,11 @@
 
 #define SENSEHAT_ID 's'
 
-static struct regmap_config sensehat_config;
+static struct regmap_config sensehat_config = {
+	.name = "sensehat",
+	.reg_bits = 8,
+	.val_bits = 8,
+};
 
 static struct platform_device *
 sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
@@ -130,12 +134,6 @@ static int sensehat_probe(struct i2c_client *i2c,
 
 	return 0;
 }
-
-static struct regmap_config sensehat_config = {
-	.name = "sensehat",
-	.reg_bits = 8,
-	.val_bits = 8,
-};
 
 static const struct i2c_device_id sensehat_i2c_id[] = {
 	{ .name = "sensehat" },
