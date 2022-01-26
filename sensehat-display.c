@@ -159,18 +159,21 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 			ret = -EFAULT;
 		break;
 	case SENSEDISP_IORESET_GAMMA:
-		if (arg < GAMMA_PRESET_COUNT)
-			memcpy(sensehat_display->gamma, gamma_presets[arg],
-				GAMMA_SIZE);
-		else
+		if (arg >= GAMMA_PRESET_COUNT)
+		{
 			ret = -EINVAL;
-		break;
+			goto no_update;
+		}
+		memcpy(sensehat_display->gamma, gamma_presets[arg],
+			GAMMA_SIZE);
+		goto no_check;
 	default:
 		ret = -EINVAL;
 		break;
 	}
 	for(i = 0; i < GAMMA_SIZE; ++i)
 		sensehat_display->gamma[i] &= 0x1f;
+no_check:
 	sensehat_update_display(sensehat);
 no_update:
 	mutex_unlock(&sensehat_display->rw_mtx);
