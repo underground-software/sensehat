@@ -30,10 +30,41 @@
 
 #define SENSEHAT_ID 's'
 
-static struct platform_device *
-sensehat_client_dev_register(struct sensehat *sensehat, const char *name);
+static struct regmap_config sensehat_config = {
+	.name = "sensehat",
+	.reg_bits = 8,
+	.val_bits = 8,
+};
 
-static struct regmap_config sensehat_config;
+static struct platform_device *
+sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
+{
+	long ret = -ENOMEM;
+	struct platform_device *pdev =
+		platform_device_alloc(name, PLATFORM_DEVID_AUTO);
+
+	if (!pdev)
+		goto alloc_fail;
+
+	pdev->dev.parent = sensehat->dev;
+	platform_set_drvdata(pdev, sensehat);
+
+	ret = platform_device_add(pdev);
+	if (ret)
+		goto add_fail;
+
+	ret = devm_add_action_or_reset(
+		sensehat->dev, (void *)platform_device_unregister, pdev);
+	if (ret)
+		goto alloc_fail;
+
+	return pdev;
+
+add_fail:
+	platform_device_put(pdev);
+alloc_fail:
+	return ERR_PTR(ret);
+}
 
 static int sensehat_probe(struct i2c_client *i2c,
 			  const struct i2c_device_id *id)
@@ -103,42 +134,6 @@ static int sensehat_probe(struct i2c_client *i2c,
 
 	return 0;
 }
-
-static struct platform_device *
-sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
-{
-	long ret = -ENOMEM;
-	struct platform_device *pdev =
-		platform_device_alloc(name, PLATFORM_DEVID_AUTO);
-
-	if (!pdev)
-		goto alloc_fail;
-
-	pdev->dev.parent = sensehat->dev;
-	platform_set_drvdata(pdev, sensehat);
-
-	ret = platform_device_add(pdev);
-	if (ret)
-		goto add_fail;
-
-	ret = devm_add_action_or_reset(
-		sensehat->dev, (void *)platform_device_unregister, pdev);
-	if (ret)
-		goto alloc_fail;
-
-	return pdev;
-
-add_fail:
-	platform_device_put(pdev);
-alloc_fail:
-	return ERR_PTR(ret);
-}
-
-static struct regmap_config sensehat_config = {
-	.name = "sensehat",
-	.reg_bits = 8,
-	.val_bits = 8,
-};
 
 static const struct i2c_device_id sensehat_i2c_id[] = {
 	{ .name = "sensehat" },
