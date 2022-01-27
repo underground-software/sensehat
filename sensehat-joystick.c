@@ -16,14 +16,14 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-
-#define SENSEHAT_KEYS 0xF2
 #include <linux/of_irq.h>
+#include <linux/property.h>
 
 struct sensehat_joystick {
 	struct platform_device *pdev;
 	struct input_dev *keys_dev;
 	unsigned long prev_states;
+	u32 joystick_register;
 };
 
 static const unsigned int keymap[] = {
@@ -37,7 +37,8 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 	struct regmap *regmap = dev_get_regmap(
 		sensehat_joystick->pdev->dev.parent, NULL);
 	unsigned long curr_states, changes;
-	error = regmap_read(regmap, SENSEHAT_KEYS, &keys);
+	error = regmap_read(regmap, sensehat_joystick->joystick_register,
+		&keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
 			"Failed to read joystick state: %d", error);
@@ -82,6 +83,13 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	error = input_register_device(sensehat_joystick->keys_dev);
 	if (error) {
 		dev_err(&pdev->dev, "Could not register input device.\n");
+		return error;
+	}
+
+	error = device_property_read_u32(&pdev->dev, "reg",
+		&sensehat_joystick->joystick_register);
+	if (error) {
+		dev_err(&pdev->dev, "Could not read register propery.\n");
 		return error;
 	}
 
