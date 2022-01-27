@@ -48,19 +48,20 @@ static const u8 gamma_presets[][GAMMA_SIZE] = {
 	},
 };
 
-static void sensehat_update_display(struct sensehat *sensehat)
+static void sensehat_update_display(struct sensehat_display *display)
 {
 	int i, ret;
-	struct sensehat_display *display = &sensehat->display;
+	struct regmap *regmap = dev_get_regmap(
+		display->pdev->dev.parent, NULL);
 	u8 temp[VMEM_SIZE];
 
 	for(i = 0; i < VMEM_SIZE; ++i)
 		temp[i] = display->gamma[display->vmem[i] & 0x1f];
 
-	ret = regmap_bulk_write(sensehat->regmap, SENSEHAT_DISPLAY, temp,
+	ret = regmap_bulk_write(regmap, SENSEHAT_DISPLAY, temp,
 				VMEM_SIZE);
 	if (ret < 0)
-		dev_err(sensehat->dev,
+		dev_err(&display->pdev->dev,
 			"Update to 8x8 LED matrix display failed");
 }
 
@@ -90,9 +91,8 @@ static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int when
 static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 				     size_t count, loff_t *f_pos)
 {
-	struct sensehat *sensehat =
-		container_of(filp->private_data, struct sensehat, display.mdev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
+	struct sensehat_display *sensehat_display =
+		container_of(filp->private_data, struct sensehat_display, mdev);
 	ssize_t retval = -EFAULT;
 
 	if (*f_pos >= VMEM_SIZE)
@@ -113,9 +113,8 @@ out:
 static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 				      size_t count, loff_t *f_pos)
 {
-	struct sensehat *sensehat =
-		container_of(filp->private_data, struct sensehat, display.mdev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
+	struct sensehat_display *sensehat_display =
+		container_of(filp->private_data, struct sensehat_display, mdev);
 	int ret = count;
 
 	if (*f_pos >= VMEM_SIZE)
@@ -129,7 +128,7 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 		ret = -EFAULT;
 		goto out;
 	}
-	sensehat_update_display(sensehat);
+	sensehat_update_display(sensehat_display);
 	*f_pos += count;
 out:
 	mutex_unlock(&sensehat_display->rw_mtx);
@@ -139,9 +138,8 @@ out:
 static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 				   unsigned long arg)
 {
-	struct sensehat *sensehat =
-		container_of(filp->private_data, struct sensehat, display.mdev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
+	struct sensehat_display *sensehat_display =
+		container_of(filp->private_data, struct sensehat_display, mdev);
 	void __user *user_ptr = (void __user *)arg;
 	int i, ret = 0;
 
@@ -174,7 +172,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 	for(i = 0; i < GAMMA_SIZE; ++i)
 		sensehat_display->gamma[i] &= 0x1f;
 no_check:
-	sensehat_update_display(sensehat);
+	sensehat_update_display(sensehat_display);
 no_update:
 	mutex_unlock(&sensehat_display->rw_mtx);
 	return ret;
@@ -226,7 +224,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		 "8x8 LED matrix display registered with minor number %i",
 		 sensehat_display->mdev.minor);
 
-	sensehat_update_display(sensehat);
+	sensehat_update_display(sensehat_display);
 	return 0;
 }
 
