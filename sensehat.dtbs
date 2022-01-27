@@ -15,6 +15,15 @@
 		reg = <0x46>;
 		interrupts = <23 1>;
 		interrupt-parent = <&gpio>;
+		display@0 {
+			compatible = "raspberrypi,sensehat-display";
+			reg = <0x0>;
+		};
+		joystick@f2 {
+			compatible = "raspberrypi,sensehat-joystick";
+			reg = <0xf2>;
+			interrupts = <23 1>;
+		};
 	};
 
 	lsm9ds1-magn@1c {
