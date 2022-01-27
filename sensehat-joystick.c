@@ -20,6 +20,12 @@
 
 #define SENSEHAT_KEYS 0xF2
 
+struct sensehat_joystick {
+	struct platform_device *pdev;
+	struct input_dev *keys_dev;
+	unsigned long prev_states;
+};
+
 static const unsigned int keymap[] = {
 	BTN_DPAD_DOWN, BTN_DPAD_RIGHT, BTN_DPAD_UP, BTN_SELECT, BTN_DPAD_LEFT,
 };
@@ -53,9 +59,11 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 static int sensehat_joystick_probe(struct platform_device *pdev)
 {
 	int error, i;
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
+	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(&pdev->dev,
+		sizeof(*sensehat_joystick), GFP_KERNEL);
+	struct sensehat *sensehat = platform_get_drvdata(pdev);
 
+	sensehat_joystick->pdev = pdev;
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");

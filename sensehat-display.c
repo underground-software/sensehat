@@ -21,13 +21,22 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/mod_devicetable.h>
+#include <linux/miscdevice.h>
 #include <linux/regmap.h>
 #include "sensehat.h"
 
 #define SENSEHAT_DISPLAY 0x00
 
-#define GAMMA_SIZE sizeof_field(struct sensehat_display, gamma)
-#define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
+#define GAMMA_SIZE 32
+#define VMEM_SIZE 192
+
+struct sensehat_display {
+	struct platform_device *pdev;
+	struct miscdevice mdev;
+	struct mutex rw_mtx;
+	u8 gamma[GAMMA_SIZE];
+	u8 vmem[VMEM_SIZE];
+};
 
 static bool lowlight;
 module_param(lowlight, bool, 0);
@@ -190,8 +199,10 @@ static int sensehat_display_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
+	struct sensehat_display *sensehat_display = devm_kzalloc(&pdev->dev,
+		sizeof(*sensehat_display), GFP_KERNEL);
+
+	sensehat_display->pdev = pdev;
 
 	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
 

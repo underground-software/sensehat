@@ -71,6 +71,7 @@ static int sensehat_probe(struct i2c_client *i2c,
 {
 	int ret;
 	unsigned int reg;
+	struct platform_device *child_dev;
 
 	struct sensehat *sensehat =
 		devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
@@ -113,22 +114,20 @@ static int sensehat_probe(struct i2c_client *i2c,
 		 reg);
 
 #ifdef CONFIG_JOYSTICK_SENSEHAT
-	sensehat->joystick.pdev =
-		sensehat_client_dev_register(sensehat, "sensehat-joystick");
+	child_dev = sensehat_client_dev_register(sensehat, "sensehat-joystick");
 
-	if (IS_ERR(sensehat->joystick.pdev)) {
+	if (IS_ERR(child_dev)) {
 		dev_err(sensehat->dev, "failed to register sensehat-joystick");
-		return PTR_ERR(sensehat->joystick.pdev);
+		return PTR_ERR(child_dev);
 	}
 #endif
 #ifdef CONFIG_SENSEHAT_DISPLAY
 
-	sensehat->display.pdev =
-		sensehat_client_dev_register(sensehat, "sensehat-display");
+	child_dev = sensehat_client_dev_register(sensehat, "sensehat-display");
 
-	if (IS_ERR(sensehat->display.pdev)) {
+	if (IS_ERR(child_dev)) {
 		dev_err(sensehat->dev, "failed to register sensehat-display");
-		return PTR_ERR(sensehat->display.pdev);
+		return PTR_ERR(child_dev);
 	}
 #endif
 
