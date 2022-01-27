@@ -18,6 +18,7 @@
 #include <linux/regmap.h>
 
 #define SENSEHAT_KEYS 0xF2
+#include <linux/of_irq.h>
 
 struct sensehat_joystick {
 	struct platform_device *pdev;
@@ -60,7 +61,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	int error, i;
 	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(&pdev->dev,
 		sizeof(*sensehat_joystick), GFP_KERNEL);
-	struct sensehat *sensehat = platform_get_drvdata(pdev);
 
 	sensehat_joystick->pdev = pdev;
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
@@ -85,7 +85,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return error;
 	}
 
-	error = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
+	error = devm_request_threaded_irq(&pdev->dev, of_irq_get(pdev->dev.of_node,0),
 					NULL, sensehat_joystick_report,
 					IRQF_ONESHOT, "keys",
 					sensehat_joystick);
