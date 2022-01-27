@@ -16,9 +16,15 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-#include "sensehat.h"
+#include <linux/of_irq.h>
+#include <linux/property.h>
 
-#define SENSEHAT_KEYS 0xF2
+struct sensehat_joystick {
+	struct platform_device *pdev;
+	struct input_dev *keys_dev;
+	unsigned long prev_states;
+	u32 joystick_register;
+};
 
 static const unsigned int keymap[] = {
 	BTN_DPAD_DOWN, BTN_DPAD_RIGHT, BTN_DPAD_UP, BTN_SELECT, BTN_DPAD_LEFT,
@@ -27,10 +33,12 @@ static const unsigned int keymap[] = {
 static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
 	int i, error, keys;
-	struct sensehat *sensehat = cookie;
-	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
+	struct sensehat_joystick *sensehat_joystick = cookie;
+	struct regmap *regmap = dev_get_regmap(
+		sensehat_joystick->pdev->dev.parent, NULL);
 	unsigned long curr_states, changes;
-	error = regmap_read(sensehat->regmap, SENSEHAT_KEYS, &keys);
+	error = regmap_read(regmap, sensehat_joystick->joystick_register,
+		&keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
 			"Failed to read joystick state: %d", error);
@@ -52,9 +60,10 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 static int sensehat_joystick_probe(struct platform_device *pdev)
 {
 	int error, i;
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_joystick *sensehat_joystick = &sensehat->joystick;
+	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(&pdev->dev,
+		sizeof(*sensehat_joystick), GFP_KERNEL);
 
+	sensehat_joystick->pdev = pdev;
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
@@ -77,9 +86,17 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return error;
 	}
 
-	error = devm_request_threaded_irq(&pdev->dev, sensehat->i2c_client->irq,
+	error = device_property_read_u32(&pdev->dev, "reg",
+		&sensehat_joystick->joystick_register);
+	if (error) {
+		dev_err(&pdev->dev, "Could not read register propery.\n");
+		return error;
+	}
+
+	error = devm_request_threaded_irq(&pdev->dev, of_irq_get(pdev->dev.of_node,0),
 					NULL, sensehat_joystick_report,
-					IRQF_ONESHOT, "keys", sensehat);
+					IRQF_ONESHOT, "keys",
+					sensehat_joystick);
 
 	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
@@ -88,16 +105,17 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static struct platform_device_id sensehat_joystick_device_id[] = {
-	{ .name = "sensehat-joystick" },
+static struct of_device_id sensehat_joystick_device_id[] = {
+	{ .compatible = "raspberrypi,sensehat-joystick" },
 	{},
 };
-MODULE_DEVICE_TABLE(platform, sensehat_joystick_device_id);
+MODULE_DEVICE_TABLE(of, sensehat_joystick_device_id);
 
 static struct platform_driver sensehat_joystick_driver = {
 	.probe = sensehat_joystick_probe,
 	.driver = {
 		.name = "sensehat-joystick",
+		.of_match_table = sensehat_joystick_device_id,
 	},
 };
 

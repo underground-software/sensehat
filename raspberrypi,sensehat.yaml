@@ -43,6 +43,14 @@ examples:
       sensehat@46 {
         compatible = "raspberrypi,sensehat";
         reg = <0x46>;
-        interrupts = <23 GPIO_ACTIVE_HIGH>;
+        display@0 {
+          compatible = "raspberrypi,sensehat-display";
+          reg = <0x0>;
+        };
+        joystick@f2 {
+          compatible = "raspberrypi,sensehat-joystick";
+          reg = <0x0>;
+          interrupts = <23 GPIO_ACTIVE_HIGH>;
+        };
       };
     };
