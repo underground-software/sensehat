@@ -16,7 +16,6 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-#include "sensehat.h"
 
 #define SENSEHAT_KEYS 0xF2
 
@@ -98,16 +97,17 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static struct platform_device_id sensehat_joystick_device_id[] = {
-	{ .name = "sensehat-joystick" },
+static struct of_device_id sensehat_joystick_device_id[] = {
+	{ .compatible = "raspberrypi,sensehat-joystick" },
 	{},
 };
-MODULE_DEVICE_TABLE(platform, sensehat_joystick_device_id);
+MODULE_DEVICE_TABLE(of, sensehat_joystick_device_id);
 
 static struct platform_driver sensehat_joystick_driver = {
 	.probe = sensehat_joystick_probe,
 	.driver = {
 		.name = "sensehat-joystick",
+		.of_match_table = sensehat_joystick_device_id,
 	},
 };
 

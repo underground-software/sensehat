@@ -19,12 +19,6 @@
 #define SENSEDISP_IOSET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 1)
 #define SENSEDISP_IORESET_GAMMA _IO(SENSEDISP_IOC_MAGIC, 2)
 
-struct sensehat {
-	struct device *dev;
-	struct i2c_client *i2c_client;
-	struct regmap *regmap;
-};
-
 enum gamma_preset {
 	GAMMA_DEFAULT = 0,
 	GAMMA_LOWLIGHT,

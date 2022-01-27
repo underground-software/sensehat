@@ -1,5 +1,3 @@
-#define CONFIG_SENSEHAT_DISPLAY
-#define CONFIG_JOYSTICK_SENSEHAT
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Raspberry Pi Sense HAT core driver
@@ -16,19 +14,10 @@
  */
 
 #include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/err.h>
-#include <linux/init.h>
 #include <linux/i2c.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
+#include <linux/of_platform.h>
 #include <linux/regmap.h>
-#include "sensehat.h"
-
-#define SENSEHAT_WAI 0xF0
-#define SENSEHAT_VER 0xF1
-
-#define SENSEHAT_ID 's'
 
 static struct regmap_config sensehat_config = {
 	.name = "sensehat",
@@ -36,100 +25,18 @@ static struct regmap_config sensehat_config = {
 	.val_bits = 8,
 };
 
-static struct platform_device *
-sensehat_client_dev_register(struct sensehat *sensehat, const char *name)
-{
-	long ret = -ENOMEM;
-	struct platform_device *pdev =
-		platform_device_alloc(name, PLATFORM_DEVID_AUTO);
-
-	if (!pdev)
-		goto alloc_fail;
-
-	pdev->dev.parent = sensehat->dev;
-	platform_set_drvdata(pdev, sensehat);
-
-	ret = platform_device_add(pdev);
-	if (ret)
-		goto add_fail;
-
-	ret = devm_add_action_or_reset(
-		sensehat->dev, (void *)platform_device_unregister, pdev);
-	if (ret)
-		goto alloc_fail;
-
-	return pdev;
-
-add_fail:
-	platform_device_put(pdev);
-alloc_fail:
-	return ERR_PTR(ret);
-}
-
 static int sensehat_probe(struct i2c_client *i2c,
 			  const struct i2c_device_id *id)
 {
-	int ret;
-	unsigned int reg;
-	struct platform_device *child_dev;
+	struct regmap *regmap =
+		devm_regmap_init_i2c(i2c, &sensehat_config);
 
-	struct sensehat *sensehat =
-		devm_kzalloc(&i2c->dev, sizeof(*sensehat), GFP_KERNEL);
-
-	if (!sensehat)
-		return -ENOMEM;
-
-	i2c_set_clientdata(i2c, sensehat);
-	sensehat->dev = &i2c->dev;
-	sensehat->i2c_client = i2c;
-
-	sensehat->regmap =
-		devm_regmap_init_i2c(sensehat->i2c_client, &sensehat_config);
-
-	if (IS_ERR(sensehat->regmap)) {
-		dev_err(sensehat->dev, "Failed to initialize sensehat regmap");
-		return PTR_ERR(sensehat->regmap);
+	if (IS_ERR(regmap)) {
+		dev_err(&i2c->dev, "Failed to initialize sensehat regmap");
+		return PTR_ERR(regmap);
 	}
 
-	ret = regmap_read(sensehat->regmap, SENSEHAT_WAI, &reg);
-	if (ret < 0) {
-		dev_err(sensehat->dev, "failed to read from device");
-		return ret;
-	}
-
-	if (reg != SENSEHAT_ID) {
-		dev_err(sensehat->dev, "expected device ID %i, got %i",
-			SENSEHAT_ID, ret);
-		return -EINVAL;
-	}
-
-	ret = regmap_read(sensehat->regmap, SENSEHAT_VER, &reg);
-	if (ret < 0) {
-		dev_err(sensehat->dev,
-			"Unable to get sensehat firmware version");
-		return ret;
-	}
-
-	dev_info(sensehat->dev, "Raspberry Pi Sense HAT firmware version %i\n",
-		 reg);
-
-#ifdef CONFIG_JOYSTICK_SENSEHAT
-	child_dev = sensehat_client_dev_register(sensehat, "sensehat-joystick");
-
-	if (IS_ERR(child_dev)) {
-		dev_err(sensehat->dev, "failed to register sensehat-joystick");
-		return PTR_ERR(child_dev);
-	}
-#endif
-#ifdef CONFIG_SENSEHAT_DISPLAY
-
-	child_dev = sensehat_client_dev_register(sensehat, "sensehat-display");
-
-	if (IS_ERR(child_dev)) {
-		dev_err(sensehat->dev, "failed to register sensehat-display");
-		return PTR_ERR(child_dev);
-	}
-#endif
+	devm_of_platform_populate(&i2c->dev);
 
 	return 0;
 }

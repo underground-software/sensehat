@@ -241,16 +241,17 @@ static int sensehat_display_probe(struct platform_device *pdev)
 
 
 
-static struct platform_device_id sensehat_display_device_id[] = {
-	{ .name = "sensehat-display" },
+static struct of_device_id sensehat_display_device_id[] = {
+	{ .compatible = "raspberrypi,sensehat-display" },
 	{},
 };
-MODULE_DEVICE_TABLE(platform, sensehat_display_device_id);
+MODULE_DEVICE_TABLE(of, sensehat_display_device_id);
 
 static struct platform_driver sensehat_display_driver = {
 	.probe = sensehat_display_probe,
 	.driver = {
 		.name = "sensehat-display",
+		.of_match_table = sensehat_display_device_id,
 	},
 };
 
