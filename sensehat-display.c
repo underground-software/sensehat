@@ -23,9 +23,8 @@
 #include <linux/mod_devicetable.h>
 #include <linux/miscdevice.h>
 #include <linux/regmap.h>
+#include <linux/property.h>
 #include "sensehat.h"
-
-#define SENSEHAT_DISPLAY 0x00
 
 #define GAMMA_SIZE 32
 #define VMEM_SIZE 192
@@ -36,6 +35,7 @@ struct sensehat_display {
 	struct mutex rw_mtx;
 	u8 gamma[GAMMA_SIZE];
 	u8 vmem[VMEM_SIZE];
+	u32 display_register;
 };
 
 static bool lowlight;
@@ -67,7 +67,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 	for(i = 0; i < VMEM_SIZE; ++i)
 		temp[i] = display->gamma[display->vmem[i] & 0x1f];
 
-	ret = regmap_bulk_write(regmap, SENSEHAT_DISPLAY, temp,
+	ret = regmap_bulk_write(regmap, display->display_register, temp,
 				VMEM_SIZE);
 	if (ret < 0)
 		dev_err(&display->pdev->dev,
@@ -209,6 +209,14 @@ static int sensehat_display_probe(struct platform_device *pdev)
 	memset(sensehat_display->vmem, 0, VMEM_SIZE);
 
 	mutex_init(&sensehat_display->rw_mtx);
+
+	ret = device_property_read_u32(&pdev->dev, "reg",
+		&sensehat_display->display_register);
+	if (ret) {
+		dev_err(&pdev->dev, "Could not read register propery.\n");
+		return ret;
+	}
+
 
 	sensehat_display->mdev = (struct miscdevice){
 		.minor = MISC_DYNAMIC_MINOR,
