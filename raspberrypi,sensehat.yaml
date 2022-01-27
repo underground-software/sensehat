@@ -27,15 +27,10 @@ properties:
     items:
       - description: pin number for joystick interrupt
 
-  interrupt-parent:
-    items:
-      - description: gpio pin bank for interrupt pin
-
 required:
   - compatible
   - reg
   - interrupts
-  - interrupt-parent
 
 additionalProperties: false
 
@@ -49,6 +44,5 @@ examples:
         compatible = "raspberrypi,sensehat";
         reg = <0x46>;
         interrupts = <23 GPIO_ACTIVE_HIGH>;
-        interrupt-parent = <&gpio>;
       };
     };

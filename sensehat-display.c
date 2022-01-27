@@ -159,18 +159,21 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 			ret = -EFAULT;
 		break;
 	case SENSEDISP_IORESET_GAMMA:
-		if (arg < GAMMA_PRESET_COUNT)
-			memcpy(sensehat_display->gamma, gamma_presets[arg],
-				GAMMA_SIZE);
-		else
+		if (arg >= GAMMA_PRESET_COUNT)
+		{
 			ret = -EINVAL;
-		break;
+			goto no_update;
+		}
+		memcpy(sensehat_display->gamma, gamma_presets[arg],
+			GAMMA_SIZE);
+		goto no_check;
 	default:
 		ret = -EINVAL;
 		break;
 	}
 	for(i = 0; i < GAMMA_SIZE; ++i)
 		sensehat_display->gamma[i] &= 0x1f;
+no_check:
 	sensehat_update_display(sensehat);
 no_update:
 	mutex_unlock(&sensehat_display->rw_mtx);
@@ -212,20 +215,18 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	ret = devm_add_action(&pdev->dev, (void *)misc_deregister, &sensehat_display->mdev);
+	if (ret < 0) {
+		dev_err(&pdev->dev,
+			"Could not add misc device to devm\n");
+		return ret;
+	}
+
 	dev_info(&pdev->dev,
 		 "8x8 LED matrix display registered with minor number %i",
 		 sensehat_display->mdev.minor);
 
 	sensehat_update_display(sensehat);
-	return 0;
-}
-
-static int sensehat_display_remove(struct platform_device *pdev)
-{
-	struct sensehat *sensehat = dev_get_drvdata(&pdev->dev);
-	struct sensehat_display *sensehat_display = &sensehat->display;
-
-	misc_deregister(&sensehat_display->mdev);
 	return 0;
 }
 
@@ -239,7 +240,6 @@ MODULE_DEVICE_TABLE(platform, sensehat_display_device_id);
 
 static struct platform_driver sensehat_display_driver = {
 	.probe = sensehat_display_probe,
-	.remove = sensehat_display_remove,
 	.driver = {
 		.name = "sensehat-display",
 	},
