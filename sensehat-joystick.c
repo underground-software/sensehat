@@ -104,6 +104,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "IRQ request failed.\n");
 		return error;
 	}
+
 	return 0;
 }
 

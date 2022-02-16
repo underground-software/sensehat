@@ -153,6 +153,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
+
 	switch (cmd) {
 	case SENSEDISP_IOGET_GAMMA:
 		if (copy_to_user(user_ptr, sensehat_display->gamma,
@@ -177,6 +178,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 		ret = -EINVAL;
 		break;
 	}
+
 	for(i = 0; i < GAMMA_SIZE; ++i)
 		sensehat_display->gamma[i] &= 0x1f;
 no_check:
