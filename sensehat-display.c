@@ -36,6 +36,7 @@ struct sensehat_display {
 	u8 gamma[GAMMA_SIZE];
 	u8 vmem[VMEM_SIZE];
 	u32 display_register;
+	struct regmap *regmap;
 };
 
 static bool lowlight;
@@ -60,14 +61,12 @@ static const u8 gamma_presets[][GAMMA_SIZE] = {
 static void sensehat_update_display(struct sensehat_display *display)
 {
 	int i, ret;
-	struct regmap *regmap = dev_get_regmap(
-		display->pdev->dev.parent, NULL);
 	u8 temp[VMEM_SIZE];
 
 	for(i = 0; i < VMEM_SIZE; ++i)
 		temp[i] = display->gamma[display->vmem[i] & 0x1f];
 
-	ret = regmap_bulk_write(regmap, display->display_register, temp,
+	ret = regmap_bulk_write(display->regmap, display->display_register, temp,
 				VMEM_SIZE);
 	if (ret < 0)
 		dev_err(&display->pdev->dev,
@@ -154,6 +153,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
+
 	switch (cmd) {
 	case SENSEDISP_IOGET_GAMMA:
 		if (copy_to_user(user_ptr, sensehat_display->gamma,
@@ -178,6 +178,7 @@ static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
 		ret = -EINVAL;
 		break;
 	}
+
 	for(i = 0; i < GAMMA_SIZE; ++i)
 		sensehat_display->gamma[i] &= 0x1f;
 no_check:
@@ -203,6 +204,8 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		sizeof(*sensehat_display), GFP_KERNEL);
 
 	sensehat_display->pdev = pdev;
+
+	sensehat_display->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 
 	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
 
