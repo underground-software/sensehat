@@ -24,6 +24,7 @@ struct sensehat_joystick {
 	struct input_dev *keys_dev;
 	unsigned long prev_states;
 	u32 joystick_register;
+	struct regmap *regmap;
 };
 
 static const unsigned int keymap[] = {
@@ -34,10 +35,8 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 {
 	int i, error, keys;
 	struct sensehat_joystick *sensehat_joystick = cookie;
-	struct regmap *regmap = dev_get_regmap(
-		sensehat_joystick->pdev->dev.parent, NULL);
 	unsigned long curr_states, changes;
-	error = regmap_read(regmap, sensehat_joystick->joystick_register,
+	error = regmap_read(sensehat_joystick->regmap, sensehat_joystick->joystick_register,
 		&keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
@@ -64,6 +63,9 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		sizeof(*sensehat_joystick), GFP_KERNEL);
 
 	sensehat_joystick->pdev = pdev;
+
+	sensehat_joystick->regmap = dev_get_regmap(sensehat_joystick->pdev->dev.parent, NULL);
+
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
 		dev_err(&pdev->dev, "Could not allocate input device.\n");
