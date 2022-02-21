@@ -200,7 +200,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	struct sensehat_display *sensehat_display = devm_kzalloc(&pdev->dev,
+	struct sensehat_display *sensehat_display = devm_kmalloc(&pdev->dev,
 		sizeof(*sensehat_display), GFP_KERNEL);
 
 	sensehat_display->pdev = pdev;
