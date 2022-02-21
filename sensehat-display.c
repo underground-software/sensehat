@@ -222,6 +222,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	sensehat_update_display(sensehat_display);
 
 	sensehat_display->mdev = (struct miscdevice){
 		.minor = MISC_DYNAMIC_MINOR,
@@ -241,7 +242,6 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		 "8x8 LED matrix display registered with minor number %i",
 		 sensehat_display->mdev.minor);
 
-	sensehat_update_display(sensehat_display);
 	return 0;
 }
 
