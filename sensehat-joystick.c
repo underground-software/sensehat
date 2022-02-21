@@ -16,7 +16,6 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-#include <linux/of_irq.h>
 #include <linux/property.h>
 
 struct sensehat_joystick {
@@ -58,7 +57,7 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 
 static int sensehat_joystick_probe(struct platform_device *pdev)
 {
-	int error, i;
+	int error, i, irq;
 	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(&pdev->dev,
 		sizeof(*sensehat_joystick), GFP_KERNEL);
 
@@ -95,10 +94,16 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return error;
 	}
 
-	error = devm_request_threaded_irq(&pdev->dev, of_irq_get(pdev->dev.of_node,0),
-					NULL, sensehat_joystick_report,
-					IRQF_ONESHOT, "keys",
-					sensehat_joystick);
+	irq = platform_get_irq(pdev, 0);
+	if(irq < 0){
+		dev_err(&pdev->dev, "Could not retrieve interrupt request.\n");
+		return irq;
+	}
+
+	error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+		sensehat_joystick_report,
+		IRQF_ONESHOT, "keys",
+		sensehat_joystick);
 
 	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
