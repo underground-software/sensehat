@@ -200,10 +200,12 @@ static int sensehat_display_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	struct sensehat_display *sensehat_display = devm_kzalloc(&pdev->dev,
+	struct sensehat_display *sensehat_display = devm_kmalloc(&pdev->dev,
 		sizeof(*sensehat_display), GFP_KERNEL);
 
 	sensehat_display->pdev = pdev;
+
+	dev_set_drvdata(&pdev->dev, sensehat_display);
 
 	sensehat_display->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 
@@ -220,6 +222,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	sensehat_update_display(sensehat_display);
 
 	sensehat_display->mdev = (struct miscdevice){
 		.minor = MISC_DYNAMIC_MINOR,
@@ -235,22 +238,20 @@ static int sensehat_display_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = devm_add_action(&pdev->dev, (void *)misc_deregister, &sensehat_display->mdev);
-	if (ret < 0) {
-		dev_err(&pdev->dev,
-			"Could not add misc device to devm\n");
-		return ret;
-	}
-
 	dev_info(&pdev->dev,
 		 "8x8 LED matrix display registered with minor number %i",
 		 sensehat_display->mdev.minor);
 
-	sensehat_update_display(sensehat_display);
 	return 0;
 }
 
+static int sensehat_display_remove(struct platform_device *pdev)
+{
+	struct sensehat_display *sensehat_display = dev_get_drvdata(&pdev->dev);
 
+	misc_deregister(&sensehat_display->mdev);
+	return 0;
+}
 
 static struct of_device_id sensehat_display_device_id[] = {
 	{ .compatible = "raspberrypi,sensehat-display" },
@@ -260,6 +261,7 @@ MODULE_DEVICE_TABLE(of, sensehat_display_device_id);
 
 static struct platform_driver sensehat_display_driver = {
 	.probe = sensehat_display_probe,
+	.remove = sensehat_display_remove,
 	.driver = {
 		.name = "sensehat-display",
 		.of_match_table = sensehat_display_device_id,
