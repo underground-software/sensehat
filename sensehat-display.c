@@ -75,25 +75,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 
 static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
 {
-	loff_t base, pos;
-	switch (whence) {
-	case SEEK_SET:
-		base = 0;
-		break;
-	case SEEK_CUR:
-		base = filp->f_pos;
-		break;
-	case SEEK_END:
-		base = VMEM_SIZE;
-		break;
-	default:
-		return -EINVAL;
-	}
-	pos = base + offset;
-	if (pos < 0 || pos >= VMEM_SIZE)
-		return -EINVAL;
-	filp->f_pos = pos;
-	return base;
+	return fixed_size_llseek(filp, offset, whence, VMEM_SIZE);
 }
 
 static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
@@ -101,7 +83,7 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 {
 	struct sensehat_display *sensehat_display =
 		container_of(filp->private_data, struct sensehat_display, mdev);
-	ssize_t retval = -EFAULT;
+	ssize_t ret = -EFAULT;
 
 	if (*f_pos >= VMEM_SIZE)
 		return 0;
@@ -112,10 +94,10 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 	if (copy_to_user(buf, sensehat_display->vmem + *f_pos, count))
 		goto out;
 	*f_pos += count;
-	retval = count;
+	ret = count;
 out:
 	mutex_unlock(&sensehat_display->rw_mtx);
-	return retval;
+	return ret;
 }
 
 static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
@@ -123,7 +105,7 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 {
 	struct sensehat_display *sensehat_display =
 		container_of(filp->private_data, struct sensehat_display, mdev);
-	int ret = count;
+	int ret = -EFAULT;
 
 	if (*f_pos >= VMEM_SIZE)
 		return -EFBIG;
@@ -132,12 +114,10 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_from_user(sensehat_display->vmem + *f_pos, buf, count))
-	{
-		ret = -EFAULT;
 		goto out;
-	}
 	sensehat_update_display(sensehat_display);
 	*f_pos += count;
+	ret = count;
 out:
 	mutex_unlock(&sensehat_display->rw_mtx);
 	return ret;
