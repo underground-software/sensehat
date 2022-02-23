@@ -105,7 +105,7 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 {
 	struct sensehat_display *sensehat_display =
 		container_of(filp->private_data, struct sensehat_display, mdev);
-	int ret = count;
+	int ret = -EFAULT;
 
 	if (*f_pos >= VMEM_SIZE)
 		return -EFBIG;
@@ -114,12 +114,10 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_from_user(sensehat_display->vmem + *f_pos, buf, count))
-	{
-		ret = -EFAULT;
 		goto out;
-	}
 	sensehat_update_display(sensehat_display);
 	*f_pos += count;
+	ret = count;
 out:
 	mutex_unlock(&sensehat_display->rw_mtx);
 	return ret;
