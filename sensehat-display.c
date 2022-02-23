@@ -119,57 +119,11 @@ out:
 	return ret;
 }
 
-static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
-				   unsigned long arg)
-{
-	struct sensehat_display *sensehat_display =
-		container_of(filp->private_data, struct sensehat_display, mdev);
-	void __user *user_ptr = (void __user *)arg;
-	int i, ret = 0;
-
-	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
-		return -ERESTARTSYS;
-
-	switch (cmd) {
-	case SENSEDISP_IOGET_GAMMA:
-		if (copy_to_user(user_ptr, sensehat_display->gamma,
-				 GAMMA_SIZE))
-			ret = -EFAULT;
-		goto no_update;
-	case SENSEDISP_IOSET_GAMMA:
-		if (copy_from_user(sensehat_display->gamma, user_ptr,
-				GAMMA_SIZE))
-			ret = -EFAULT;
-		break;
-	case SENSEDISP_IORESET_GAMMA:
-		if (arg >= GAMMA_PRESET_COUNT)
-		{
-			ret = -EINVAL;
-			goto no_update;
-		}
-		memcpy(sensehat_display->gamma, gamma_presets[arg],
-			GAMMA_SIZE);
-		goto no_check;
-	default:
-		ret = -EINVAL;
-		break;
-	}
-
-	for(i = 0; i < GAMMA_SIZE; ++i)
-		sensehat_display->gamma[i] &= 0x1f;
-no_check:
-	sensehat_update_display(sensehat_display);
-no_update:
-	mutex_unlock(&sensehat_display->rw_mtx);
-	return ret;
-}
-
 static const struct file_operations sensehat_display_fops = {
 	.owner = THIS_MODULE,
 	.llseek = sensehat_display_llseek,
 	.read = sensehat_display_read,
 	.write = sensehat_display_write,
-	.unlocked_ioctl = sensehat_display_ioctl,
 };
 
 static int sensehat_display_probe(struct platform_device *pdev)
