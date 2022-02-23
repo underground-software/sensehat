@@ -9,7 +9,17 @@
 #include <fcntl.h>
 #include <err.h>
 
-static uint8_t screen[8][3][8];
+typedef union
+{
+	uint16_t combined;
+	struct
+	{
+		uint16_t r:5,g:6,b:5;
+	};
+}
+Color;
+
+static Color screen[8][8];
 
 static int disp_fd, joy_fd;
 
@@ -64,20 +74,8 @@ Point;
 
 static void clear_pixel(Point loc)
 {
-	screen[loc.y][0][loc.x]=0;
-	screen[loc.y][1][loc.x]=0;
-	screen[loc.y][2][loc.x]=0;
+	screen[loc.y][loc.x]=(Color){.combined = 0};
 }
-
-typedef union
-{
-	uint16_t combined;
-	struct
-	{
-		uint16_t r:5,g:5,b:5;
-	};
-}
-Color;
 
 static Color get_random_color(void)
 {
@@ -86,9 +84,7 @@ static Color get_random_color(void)
 
 static void set_pixel(Point loc, Color col)
 {
-	screen[loc.y][0][loc.x]=col.r;
-	screen[loc.y][1][loc.x]=col.g;
-	screen[loc.y][2][loc.x]=col.b;
+	screen[loc.y][loc.x]=col;
 }
 
 typedef enum
