@@ -14,13 +14,11 @@
 		compatible = "raspberrypi,sensehat";
 		reg = <0x46>;
 		interrupt-parent = <&gpio>;
-		display@0 {
+		display {
 			compatible = "raspberrypi,sensehat-display";
-			reg = <0x0>;
 		};
-		joystick@f2 {
+		joystick {
 			compatible = "raspberrypi,sensehat-joystick";
-			reg = <0xf2>;
 			interrupts = <23 1>;
 		};
 	};

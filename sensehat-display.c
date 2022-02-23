@@ -26,6 +26,8 @@
 #include <linux/property.h>
 #include "sensehat.h"
 
+#define DISPLAY_SMB_REG 0x00
+
 struct sensehat_display {
 	struct platform_device *pdev;
 	struct miscdevice mdev;
@@ -33,7 +35,6 @@ struct sensehat_display {
 	struct {
 		u16 b : 5, u : 1, g : 5, r : 5;
 	} vmem[8][8];
-	u32 display_register;
 	struct regmap *regmap;
 };
 
@@ -54,7 +55,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 			temp[i][2][j] = display->vmem[i][j].b;
 	}
 
-	ret = regmap_bulk_write(display->regmap, display->display_register, temp,
+	ret = regmap_bulk_write(display->regmap, DISPLAY_SMB_REG, temp,
 				sizeof(temp));
 	if (ret < 0)
 		dev_err(&display->pdev->dev,
@@ -134,13 +135,6 @@ static int sensehat_display_probe(struct platform_device *pdev)
 	memset(sensehat_display->vmem, 0, VMEM_SIZE);
 
 	mutex_init(&sensehat_display->rw_mtx);
-
-	ret = device_property_read_u32(&pdev->dev, "reg",
-		&sensehat_display->display_register);
-	if (ret) {
-		dev_err(&pdev->dev, "Could not read register propery.\n");
-		return ret;
-	}
 
 	sensehat_update_display(sensehat_display);
 
