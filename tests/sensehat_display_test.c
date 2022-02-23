@@ -3,17 +3,6 @@
 #include <stdint.h>
 #include <sys/ioctl.h>
 
-#define SENSE_HAT_FB_FBIOGET_GAMMA 61696
-#define SENSE_HAT_FB_FBIOSET_GAMMA 61697
-#define SENSE_HAT_FB_FBIORESET_GAMMA 61698
-
-static const uint8_t gamma[] = {
-	000,001,002,003,004,005,006,007,
-	010,011,012,013,014,015,016,017,
-	020,021,022,023,024,025,026,027,
-	030,031,032,033,034,035,036,037,
-};
-
 static void set(FILE *fp, uint8_t rgb[3])
 {
 	rewind(fp);
@@ -43,8 +32,6 @@ int main(int argc, char **argv)
 		if(NULL == (fp = fopen(path,"w")))
 			err(1,"unable to open %s", path);
 	}
-	if(0>ioctl(fileno(fp),SENSE_HAT_FB_FBIOSET_GAMMA,gamma))
-		err(1,"unable to ioctl");
 
 	char ***msg = (char**[])
 	{

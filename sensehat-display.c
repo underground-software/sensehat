@@ -26,36 +26,15 @@
 #include <linux/property.h>
 #include "sensehat.h"
 
-#define GAMMA_SIZE 32
 #define VMEM_SIZE 192
 
 struct sensehat_display {
 	struct platform_device *pdev;
 	struct miscdevice mdev;
 	struct mutex rw_mtx;
-	u8 gamma[GAMMA_SIZE];
 	u8 vmem[VMEM_SIZE];
 	u32 display_register;
 	struct regmap *regmap;
-};
-
-static bool lowlight;
-module_param(lowlight, bool, 0);
-MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
-
-static const u8 gamma_presets[][GAMMA_SIZE] = {
-	[GAMMA_DEFAULT] = {
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
-		0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07,
-		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0E, 0x0F, 0x11,
-		0x12, 0x14, 0x15, 0x17, 0x19, 0x1B, 0x1D, 0x1F,
-	},
-	[GAMMA_LOWLIGHT] = {
-		0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-		0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02,
-		0x03, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06,
-		0x06, 0x07, 0x07, 0x08, 0x08, 0x09, 0x0A, 0x0A,
-	},
 };
 
 static void sensehat_update_display(struct sensehat_display *display)
@@ -64,7 +43,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 	u8 temp[VMEM_SIZE];
 
 	for(i = 0; i < VMEM_SIZE; ++i)
-		temp[i] = display->gamma[display->vmem[i] & 0x1f];
+		temp[i] = display->vmem[i] & 0x1f;
 
 	ret = regmap_bulk_write(display->regmap, display->display_register, temp,
 				VMEM_SIZE);
@@ -123,57 +102,11 @@ out:
 	return ret;
 }
 
-static long sensehat_display_ioctl(struct file *filp, unsigned int cmd,
-				   unsigned long arg)
-{
-	struct sensehat_display *sensehat_display =
-		container_of(filp->private_data, struct sensehat_display, mdev);
-	void __user *user_ptr = (void __user *)arg;
-	int i, ret = 0;
-
-	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
-		return -ERESTARTSYS;
-
-	switch (cmd) {
-	case SENSEDISP_IOGET_GAMMA:
-		if (copy_to_user(user_ptr, sensehat_display->gamma,
-				 GAMMA_SIZE))
-			ret = -EFAULT;
-		goto no_update;
-	case SENSEDISP_IOSET_GAMMA:
-		if (copy_from_user(sensehat_display->gamma, user_ptr,
-				GAMMA_SIZE))
-			ret = -EFAULT;
-		break;
-	case SENSEDISP_IORESET_GAMMA:
-		if (arg >= GAMMA_PRESET_COUNT)
-		{
-			ret = -EINVAL;
-			goto no_update;
-		}
-		memcpy(sensehat_display->gamma, gamma_presets[arg],
-			GAMMA_SIZE);
-		goto no_check;
-	default:
-		ret = -EINVAL;
-		break;
-	}
-
-	for(i = 0; i < GAMMA_SIZE; ++i)
-		sensehat_display->gamma[i] &= 0x1f;
-no_check:
-	sensehat_update_display(sensehat_display);
-no_update:
-	mutex_unlock(&sensehat_display->rw_mtx);
-	return ret;
-}
-
 static const struct file_operations sensehat_display_fops = {
 	.owner = THIS_MODULE,
 	.llseek = sensehat_display_llseek,
 	.read = sensehat_display_read,
 	.write = sensehat_display_write,
-	.unlocked_ioctl = sensehat_display_ioctl,
 };
 
 static int sensehat_display_probe(struct platform_device *pdev)
@@ -188,8 +121,6 @@ static int sensehat_display_probe(struct platform_device *pdev)
 	dev_set_drvdata(&pdev->dev, sensehat_display);
 
 	sensehat_display->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-
-	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
 
 	memset(sensehat_display->vmem, 0, VMEM_SIZE);
 
