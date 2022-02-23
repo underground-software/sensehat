@@ -18,11 +18,12 @@
 #include <linux/regmap.h>
 #include <linux/property.h>
 
+#define JOYSTICK_SMB_REG 0xf2
+
 struct sensehat_joystick {
 	struct platform_device *pdev;
 	struct input_dev *keys_dev;
 	unsigned long prev_states;
-	u32 joystick_register;
 	struct regmap *regmap;
 };
 
@@ -35,7 +36,7 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 	int i, error, keys;
 	struct sensehat_joystick *sensehat_joystick = cookie;
 	unsigned long curr_states, changes;
-	error = regmap_read(sensehat_joystick->regmap, sensehat_joystick->joystick_register,
+	error = regmap_read(sensehat_joystick->regmap, JOYSTICK_SMB_REG,
 		&keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
@@ -84,13 +85,6 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	error = input_register_device(sensehat_joystick->keys_dev);
 	if (error) {
 		dev_err(&pdev->dev, "Could not register input device.\n");
-		return error;
-	}
-
-	error = device_property_read_u32(&pdev->dev, "reg",
-		&sensehat_joystick->joystick_register);
-	if (error) {
-		dev_err(&pdev->dev, "Could not read register propery.\n");
 		return error;
 	}
 
