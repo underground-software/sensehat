@@ -39,10 +39,6 @@ struct sensehat_display {
 	struct regmap *regmap;
 };
 
-static bool lowlight;
-module_param(lowlight, bool, 0);
-MODULE_PARM_DESC(lowlight, "Reduce LED matrix brightness to one third");
-
 static const u8 gamma_presets[][GAMMA_SIZE] = {
 	[GAMMA_DEFAULT] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01,
@@ -189,7 +185,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 
 	sensehat_display->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 
-	memcpy(sensehat_display->gamma, gamma_presets[lowlight], GAMMA_SIZE);
+	memcpy(sensehat_display->gamma, gamma_presets[GAMMA_DEFAULT], GAMMA_SIZE);
 
 	memset(sensehat_display->vmem, 0, VMEM_SIZE);
 
