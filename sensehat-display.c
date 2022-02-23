@@ -75,25 +75,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 
 static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
 {
-	loff_t base, pos;
-	switch (whence) {
-	case SEEK_SET:
-		base = 0;
-		break;
-	case SEEK_CUR:
-		base = filp->f_pos;
-		break;
-	case SEEK_END:
-		base = VMEM_SIZE;
-		break;
-	default:
-		return -EINVAL;
-	}
-	pos = base + offset;
-	if (pos < 0 || pos >= VMEM_SIZE)
-		return -EINVAL;
-	filp->f_pos = pos;
-	return base;
+	return fixed_size_llseek(filp, offset, whence, VMEM_SIZE);
 }
 
 static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
