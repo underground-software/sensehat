@@ -24,7 +24,6 @@
 #include <linux/miscdevice.h>
 #include <linux/regmap.h>
 #include <linux/property.h>
-#include "sensehat.h"
 
 #define DISPLAY_SMB_REG 0x00
 
