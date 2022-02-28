@@ -77,8 +77,8 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 
 	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return 0;
-	if (*f_pos + count > VMEM_SIZE)
-		count = VMEM_SIZE - *f_pos;
+	count = min_t(size_t, count, VMEM_SIZE - *f_pos);
+
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_to_user(buf, *f_pos + (char *)sensehat_display->vmem, count))
@@ -99,8 +99,8 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 
 	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return -EFBIG;
-	if (*f_pos + count > VMEM_SIZE)
-		count = VMEM_SIZE - *f_pos;
+	count = min_t(size_t, count, VMEM_SIZE - *f_pos);
+
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_from_user(*f_pos + (char *)sensehat_display->vmem, buf, count))
