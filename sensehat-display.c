@@ -75,7 +75,7 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 		container_of(filp->private_data, struct sensehat_display, mdev);
 	ssize_t ret = -EFAULT;
 
-	if (*f_pos >= VMEM_SIZE)
+	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return 0;
 	if (*f_pos + count > VMEM_SIZE)
 		count = VMEM_SIZE - *f_pos;
@@ -97,7 +97,7 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 		container_of(filp->private_data, struct sensehat_display, mdev);
 	int ret = -EFAULT;
 
-	if (*f_pos >= VMEM_SIZE)
+	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return -EFBIG;
 	if (*f_pos + count > VMEM_SIZE)
 		count = VMEM_SIZE - *f_pos;
