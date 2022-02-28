@@ -62,7 +62,8 @@ static void sensehat_update_display(struct sensehat_display *display)
 			"Update to 8x8 LED matrix display failed");
 }
 
-static loff_t sensehat_display_llseek(struct file *filp, loff_t offset, int whence)
+static loff_t sensehat_display_llseek(struct file *filp, loff_t offset,
+				      int whence)
 {
 	return fixed_size_llseek(filp, offset, whence, VMEM_SIZE);
 }
@@ -123,8 +124,8 @@ static int sensehat_display_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	struct sensehat_display *sensehat_display = devm_kmalloc(&pdev->dev,
-		sizeof(*sensehat_display), GFP_KERNEL);
+	struct sensehat_display *sensehat_display =
+		devm_kmalloc(&pdev->dev, sizeof(*sensehat_display), GFP_KERNEL);
 
 	sensehat_display->pdev = pdev;
 
@@ -167,7 +168,7 @@ static int sensehat_display_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static struct of_device_id sensehat_display_device_id[] = {
+static const struct of_device_id sensehat_display_device_id[] = {
 	{ .compatible = "raspberrypi,sensehat-display" },
 	{},
 };
