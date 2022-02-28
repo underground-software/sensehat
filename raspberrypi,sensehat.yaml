@@ -21,16 +21,27 @@ properties:
 
   reg:
     items:
-      - description: i2c bus address
+      - description: i2c device address
 
-  interrupts:
-    items:
-      - description: pin number for joystick interrupt
+  "#address-cells":
+    const: 1
+
+  "#size-cells":
+    const: 0
+
+  "joystick":
+    $ref: ../input/raspberrypi,sensehat-joystick.yaml
+
+  "display":
+    $ref: ../auxdisplay/raspberrypi,sensehat-display.yaml
 
 required:
   - compatible
   - reg
-  - interrupts
+  - "#address-cells"
+  - "#size-cells"
+  - joystick
+  - display
 
 additionalProperties: false
 
@@ -41,15 +52,15 @@ examples:
       #address-cells = <1>;
       #size-cells = <0>;
       sensehat@46 {
+        #address-cells = <1>;
+        #size-cells = <0>;
         compatible = "raspberrypi,sensehat";
         reg = <0x46>;
-        display@0 {
+        display {
           compatible = "raspberrypi,sensehat-display";
-          reg = <0x0>;
         };
-        joystick@f2 {
+        joystick {
           compatible = "raspberrypi,sensehat-joystick";
-          reg = <0x0>;
           interrupts = <23 GPIO_ACTIVE_HIGH>;
         };
       };

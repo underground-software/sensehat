@@ -36,21 +36,22 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 	int i, error, keys;
 	struct sensehat_joystick *sensehat_joystick = cookie;
 	unsigned long curr_states, changes;
-	error = regmap_read(sensehat_joystick->regmap, JOYSTICK_SMB_REG,
-		&keys);
+
+	error = regmap_read(sensehat_joystick->regmap, JOYSTICK_SMB_REG, &keys);
 	if (error < 0) {
 		dev_err(&sensehat_joystick->pdev->dev,
 			"Failed to read joystick state: %d", error);
 		return IRQ_NONE;
 	}
 	curr_states = keys;
-	bitmap_xor(&changes, &curr_states,
-		&sensehat_joystick->prev_states, ARRAY_SIZE(keymap));
+	bitmap_xor(&changes, &curr_states, &sensehat_joystick->prev_states,
+		   ARRAY_SIZE(keymap));
 
 	for_each_set_bit(i, &changes, ARRAY_SIZE(keymap)) {
-		input_report_key(sensehat_joystick->keys_dev,
-			keymap[i], curr_states & BIT(i));
+		input_report_key(sensehat_joystick->keys_dev, keymap[i],
+				 curr_states & BIT(i));
 	}
+
 	input_sync(sensehat_joystick->keys_dev);
 	sensehat_joystick->prev_states = keys;
 	return IRQ_HANDLED;
@@ -59,8 +60,8 @@ static irqreturn_t sensehat_joystick_report(int n, void *cookie)
 static int sensehat_joystick_probe(struct platform_device *pdev)
 {
 	int error, i, irq;
-	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(&pdev->dev,
-		sizeof(*sensehat_joystick), GFP_KERNEL);
+	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(
+		&pdev->dev, sizeof(*sensehat_joystick), GFP_KERNEL);
 
 	sensehat_joystick->pdev = pdev;
 
@@ -72,9 +73,8 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
+	for (i = 0; i < ARRAY_SIZE(keymap); i++)
 		set_bit(keymap[i], sensehat_joystick->keys_dev->keybit);
-	}
 
 	sensehat_joystick->keys_dev->name = "Raspberry Pi Sense HAT Joystick";
 	sensehat_joystick->keys_dev->phys = "sensehat-joystick/input0";
@@ -95,9 +95,9 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	}
 
 	error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-		sensehat_joystick_report,
-		IRQF_ONESHOT, "keys",
-		sensehat_joystick);
+					  sensehat_joystick_report,
+					  IRQF_ONESHOT, "keys",
+					  sensehat_joystick);
 
 	if (error) {
 		dev_err(&pdev->dev, "IRQ request failed.\n");
@@ -107,7 +107,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static struct of_device_id sensehat_joystick_device_id[] = {
+static const struct of_device_id sensehat_joystick_device_id[] = {
 	{ .compatible = "raspberrypi,sensehat-joystick" },
 	{},
 };
