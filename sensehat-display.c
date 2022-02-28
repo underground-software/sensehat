@@ -24,7 +24,6 @@
 #include <linux/miscdevice.h>
 #include <linux/regmap.h>
 #include <linux/property.h>
-#include "sensehat.h"
 
 #define DISPLAY_SMB_REG 0x00
 
@@ -75,10 +74,10 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 		container_of(filp->private_data, struct sensehat_display, mdev);
 	ssize_t ret = -EFAULT;
 
-	if (*f_pos >= VMEM_SIZE)
+	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return 0;
-	if (*f_pos + count > VMEM_SIZE)
-		count = VMEM_SIZE - *f_pos;
+	count = min_t(size_t, count, VMEM_SIZE - *f_pos);
+
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_to_user(buf, *f_pos + (char *)sensehat_display->vmem, count))
@@ -97,10 +96,10 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 		container_of(filp->private_data, struct sensehat_display, mdev);
 	int ret = -EFAULT;
 
-	if (*f_pos >= VMEM_SIZE)
+	if (*f_pos < 0 || *f_pos >= VMEM_SIZE)
 		return -EFBIG;
-	if (*f_pos + count > VMEM_SIZE)
-		count = VMEM_SIZE - *f_pos;
+	count = min_t(size_t, count, VMEM_SIZE - *f_pos);
+
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
 	if (copy_from_user(*f_pos + (char *)sensehat_display->vmem, buf, count))
