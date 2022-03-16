@@ -89,7 +89,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if(irq < 0){
+	if (irq < 0) {
 		dev_err(&pdev->dev, "Could not retrieve interrupt request.\n");
 		return irq;
 	}

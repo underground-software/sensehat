@@ -44,13 +44,12 @@ static void sensehat_update_display(struct sensehat_display *display)
 	int i, j, ret;
 	u8 temp[8][3][8];
 
-	for(i = 0; i < 8; ++i)
-	{
-		for(j = 0; j < 8; ++j)
+	for (i = 0; i < 8; ++i) {
+		for (j = 0; j < 8; ++j)
 			temp[i][0][j] = display->vmem[i][j].r;
-		for(j = 0; j < 8; ++j)
+		for (j = 0; j < 8; ++j)
 			temp[i][1][j] = display->vmem[i][j].g;
-		for(j = 0; j < 8; ++j)
+		for (j = 0; j < 8; ++j)
 			temp[i][2][j] = display->vmem[i][j].b;
 	}
 
