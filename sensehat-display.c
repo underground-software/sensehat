@@ -147,7 +147,7 @@ static int sensehat_display_probe(struct platform_device *pdev)
 	ret = misc_register(&sensehat_display->mdev);
 	if (ret < 0) {
 		dev_err(&pdev->dev,
-			"Could not register 8x8 LED matrix display.\n");
+			"Could not register 8x8 LED matrix display.");
 		return ret;
 	}
 
