@@ -129,12 +129,22 @@ static int sensehat_display_probe(struct platform_device *pdev)
 
 	struct sensehat_display *sensehat_display =
 		devm_kmalloc(&pdev->dev, sizeof(*sensehat_display), GFP_KERNEL);
+	if (!sensehat_display) {
+		dev_err(&pdev->dev,
+			"unable to allocate sensehat display");
+		return -ENOMEM;
+	}
 
 	sensehat_display->pdev = pdev;
 
 	dev_set_drvdata(&pdev->dev, sensehat_display);
 
 	sensehat_display->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+	if (!sensehat_display->regmap) {
+		dev_err(&pdev->dev,
+			"unable to get sensehat regmap");
+		return -ENODEV;
+	}
 
 	memset(sensehat_display->vmem, 0, VMEM_SIZE);
 
