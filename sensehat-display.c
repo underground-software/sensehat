@@ -26,35 +26,27 @@
 #include <linux/property.h>
 
 #define DISPLAY_SMB_REG 0x00
+#define VMEM_SIZE 192
+#define RGB_555_MASK 0x1f
 
 struct sensehat_display {
 	struct platform_device *pdev;
 	struct miscdevice mdev;
 	struct mutex rw_mtx;
-	struct {
-		u16 b : 5, u : 1, g : 5, r : 5;
-	} vmem[8][8];
+	u8 vmem[VMEM_SIZE];
 	struct regmap *regmap;
 };
 
-#define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
 
 static int sensehat_update_display(struct sensehat_display *display)
 {
-	int i, j, ret;
-	u8 temp[8][3][8];
+	int i, ret;
 
-	for (i = 0; i < 8; ++i) {
-		for (j = 0; j < 8; ++j)
-			temp[i][0][j] = display->vmem[i][j].r;
-		for (j = 0; j < 8; ++j)
-			temp[i][1][j] = display->vmem[i][j].g;
-		for (j = 0; j < 8; ++j)
-			temp[i][2][j] = display->vmem[i][j].b;
-	}
+	for (i = 0; i < VMEM_SIZE; ++i)
+		display->vmem[i] &= RGB_555_MASK;
 
-	ret = regmap_bulk_write(display->regmap, DISPLAY_SMB_REG, temp,
-				sizeof(temp));
+	ret = regmap_bulk_write(display->regmap, DISPLAY_SMB_REG, display->vmem,
+				VMEM_SIZE);
 	if (ret < 0)
 		dev_err(&display->pdev->dev,
 			"Update to 8x8 LED matrix display failed");
@@ -80,7 +72,7 @@ static ssize_t sensehat_display_read(struct file *filp, char __user *buf,
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
-	if (copy_to_user(buf, *f_pos + (char *)sensehat_display->vmem, count))
+	if (copy_to_user(buf, *f_pos + sensehat_display->vmem, count))
 		goto out;
 	*f_pos += count;
 	ret = count;
@@ -102,7 +94,7 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 
 	if (mutex_lock_interruptible(&sensehat_display->rw_mtx))
 		return -ERESTARTSYS;
-	if (copy_from_user(*f_pos + (char *)sensehat_display->vmem, buf, count))
+	if (copy_from_user(*f_pos + sensehat_display->vmem, buf, count))
 		goto out;
 	ret = sensehat_update_display(sensehat_display);
 	if (ret < 0) {
