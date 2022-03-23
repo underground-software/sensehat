@@ -39,7 +39,7 @@ struct sensehat_display {
 
 #define VMEM_SIZE sizeof_field(struct sensehat_display, vmem)
 
-static void sensehat_update_display(struct sensehat_display *display)
+static int sensehat_update_display(struct sensehat_display *display)
 {
 	int i, j, ret;
 	u8 temp[8][3][8];
@@ -58,6 +58,7 @@ static void sensehat_update_display(struct sensehat_display *display)
 	if (ret < 0)
 		dev_err(&display->pdev->dev,
 			"Update to 8x8 LED matrix display failed");
+	return ret;
 }
 
 static loff_t sensehat_display_llseek(struct file *filp, loff_t offset,
@@ -103,7 +104,11 @@ static ssize_t sensehat_display_write(struct file *filp, const char __user *buf,
 		return -ERESTARTSYS;
 	if (copy_from_user(*f_pos + (char *)sensehat_display->vmem, buf, count))
 		goto out;
-	sensehat_update_display(sensehat_display);
+	ret = sensehat_update_display(sensehat_display);
+	if (ret < 0) {
+		ret = -EIO;
+		goto out;
+	}
 	*f_pos += count;
 	ret = count;
 out:
@@ -135,7 +140,12 @@ static int sensehat_display_probe(struct platform_device *pdev)
 
 	mutex_init(&sensehat_display->rw_mtx);
 
-	sensehat_update_display(sensehat_display);
+	ret = sensehat_update_display(sensehat_display);
+	if (ret < 0) {
+		dev_err(&pdev->dev,
+			"Could not communicate with sensehat");
+		return ret;
+	}
 
 	sensehat_display->mdev = (struct miscdevice){
 		.minor = MISC_DYNAMIC_MINOR,
