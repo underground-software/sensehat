@@ -184,5 +184,6 @@ static struct platform_driver sensehat_display_driver = {
 module_platform_driver(sensehat_display_driver);
 
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT 8x8 LED matrix display driver");
+MODULE_AUTHOR("Charles Mirabile <cmirabil@redhat.com>");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");

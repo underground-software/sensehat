@@ -124,5 +124,6 @@ static struct platform_driver sensehat_joystick_driver = {
 module_platform_driver(sensehat_joystick_driver);
 
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT joystick driver");
+MODULE_AUTHOR("Charles Mirabile <cmirabil@redhat.com>");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");
