@@ -69,7 +69,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
-		dev_err(&pdev->dev, "Could not allocate input device.\n");
+		dev_err(&pdev->dev, "Could not allocate input device.");
 		return -ENOMEM;
 	}
 
@@ -84,13 +84,13 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 
 	error = input_register_device(sensehat_joystick->keys_dev);
 	if (error) {
-		dev_err(&pdev->dev, "Could not register input device.\n");
+		dev_err(&pdev->dev, "Could not register input device.");
 		return error;
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if(irq < 0){
-		dev_err(&pdev->dev, "Could not retrieve interrupt request.\n");
+	if (irq < 0) {
+		dev_err(&pdev->dev, "Could not retrieve interrupt request.");
 		return irq;
 	}
 
@@ -100,7 +100,7 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 					  sensehat_joystick);
 
 	if (error) {
-		dev_err(&pdev->dev, "IRQ request failed.\n");
+		dev_err(&pdev->dev, "IRQ request failed.");
 		return error;
 	}
 
@@ -124,5 +124,6 @@ static struct platform_driver sensehat_joystick_driver = {
 module_platform_driver(sensehat_joystick_driver);
 
 MODULE_DESCRIPTION("Raspberry Pi Sense HAT joystick driver");
+MODULE_AUTHOR("Charles Mirabile <cmirabil@redhat.com>");
 MODULE_AUTHOR("Serge Schneider <serge@raspberrypi.org>");
 MODULE_LICENSE("GPL");

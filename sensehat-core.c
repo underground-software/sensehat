@@ -25,8 +25,7 @@ static struct regmap_config sensehat_config = {
 	.val_bits = 8,
 };
 
-static int sensehat_probe(struct i2c_client *i2c,
-			  const struct i2c_device_id *id)
+static int sensehat_probe(struct i2c_client *i2c)
 {
 	struct regmap *regmap =
 		devm_regmap_init_i2c(i2c, &sensehat_config);
@@ -41,16 +40,18 @@ static int sensehat_probe(struct i2c_client *i2c,
 	return 0;
 }
 
-static const struct i2c_device_id sensehat_i2c_id[] = {
-	{ .name = "sensehat" },
+static const struct of_device_id sensehat_i2c_of_match[] = {
+	{ .compatible = "raspberrypi,sensehat" },
 	{},
 };
-MODULE_DEVICE_TABLE(i2c, sensehat_i2c_id);
+MODULE_DEVICE_TABLE(of, sensehat_i2c_of_match);
 
 static struct i2c_driver sensehat_driver = {
-	.driver = { .name = "sensehat" },
-	.probe = sensehat_probe,
-	.id_table = sensehat_i2c_id,
+	.probe_new = sensehat_probe,
+	.driver = {
+		.name = "sensehat",
+		.of_match_table = sensehat_i2c_of_match,
+	},
 };
 
 module_i2c_driver(sensehat_driver);
