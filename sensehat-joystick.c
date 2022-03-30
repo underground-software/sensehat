@@ -62,10 +62,21 @@ static int sensehat_joystick_probe(struct platform_device *pdev)
 	int error, i, irq;
 	struct sensehat_joystick *sensehat_joystick = devm_kzalloc(
 		&pdev->dev, sizeof(*sensehat_joystick), GFP_KERNEL);
+	if (!sensehat_joystick) {
+		dev_err(&pdev->dev,
+			"unable to allocate sensehat joystick");
+		return -ENOMEM;
+	}
 
 	sensehat_joystick->pdev = pdev;
 
 	sensehat_joystick->regmap = dev_get_regmap(sensehat_joystick->pdev->dev.parent, NULL);
+	if (!sensehat_joystick->regmap) {
+		dev_err(&pdev->dev,
+			"unable to get sensehat regmap");
+		return -ENODEV;
+	}
+
 
 	sensehat_joystick->keys_dev = devm_input_allocate_device(&pdev->dev);
 	if (!sensehat_joystick->keys_dev) {
